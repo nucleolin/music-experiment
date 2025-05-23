@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/nucleolin/music-experiment/static/css/main.da3831dc.css",
+    "main.js": "/nucleolin/music-experiment/static/js/main.7fb37268.js",
+    "index.html": "/nucleolin/music-experiment/index.html",
+    "main.da3831dc.css.map": "/nucleolin/music-experiment/static/css/main.da3831dc.css.map",
+    "main.7fb37268.js.map": "/nucleolin/music-experiment/static/js/main.7fb37268.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.da3831dc.css",
+    "static/js/main.7fb37268.js"
+  ]
+}
