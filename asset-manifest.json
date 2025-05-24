@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/nucleolin/music-experiment/static/css/main.da3831dc.css",
-    "main.js": "/nucleolin/music-experiment/static/js/main.7fb37268.js",
-    "index.html": "/nucleolin/music-experiment/index.html",
-    "main.da3831dc.css.map": "/nucleolin/music-experiment/static/css/main.da3831dc.css.map",
-    "main.7fb37268.js.map": "/nucleolin/music-experiment/static/js/main.7fb37268.js.map"
+    "main.css": "/music-experiment/static/css/main.1619acaf.css",
+    "main.js": "/music-experiment/static/js/main.6a2d9650.js",
+    "index.html": "/music-experiment/index.html",
+    "main.1619acaf.css.map": "/music-experiment/static/css/main.1619acaf.css.map",
+    "main.6a2d9650.js.map": "/music-experiment/static/js/main.6a2d9650.js.map"
   },
   "entrypoints": [
-    "static/css/main.da3831dc.css",
-    "static/js/main.7fb37268.js"
+    "static/css/main.1619acaf.css",
+    "static/js/main.6a2d9650.js"
   ]
 }
