@@ -1,5 +1,173 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
+// ===== 工具函數 =====
+const generateParticipantId = () => {
+  const timestamp = new Date().getTime();
+  const randomPart = Math.floor(Math.random() * 10000);
+  return `P${timestamp}-${randomPart}`;
+};
+
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+// 輔助函數：生成音檔路徑
+const getStimulusFilePath = (stimulus, baseUrl = '') => {
+  return `${baseUrl}/music/${stimulus.genre}/${stimulus.filename}`;
+};
+
+// ===== 常數定義 =====
+const allGenres = ["classical", "math_rock", "pop_dance", "jazz", "scandipop", "jazz_pop"];
+const totalStimuliExpected = 12; // 6 genres * 2 segments/genre
+
+// 統一的曲風選項
+const genreOptions = [
+  { value: "classical", label: "古典音樂 (Classical)" },
+  { value: "math_rock", label: "數字搖滾 (Math Rock)" },
+  { value: "pop_dance", label: "流行舞曲 (Pop Dance)" },
+  { value: "jazz", label: "爵士樂 (Jazz)" },
+  { value: "scandipop", label: "斯堪地流行 (Scandipop)" },
+  { value: "jazz_pop", label: "爵士流行 (Jazz Pop)" },
+  { value: "other", label: "其他" },
+  { value: "not_sure", label: "無法辨識" }
+];
+
+// ===== 音樂檔案資料 =====
+const musicFiles = [
+  { genre: "classical", filename: "classical_song1_segment_start.wav", song_id: "classical_s1", segment_type: "start" },
+  { genre: "classical", filename: "classical_song1_segment_mid.wav", song_id: "classical_s1", segment_type: "mid" },
+  { genre: "classical", filename: "classical_song2_segment_start.wav", song_id: "classical_s2", segment_type: "start" },
+  { genre: "classical", filename: "classical_song2_segment_mid.wav", song_id: "classical_s2", segment_type: "mid" },
+  { genre: "classical", filename: "classical_song3_segment_start.wav", song_id: "classical_s3", segment_type: "start" },
+  { genre: "classical", filename: "classical_song3_segment_mid.wav", song_id: "classical_s3", segment_type: "mid" },
+  { genre: "classical", filename: "classical_song4_segment_start.wav", song_id: "classical_s4", segment_type: "start" },
+  { genre: "classical", filename: "classical_song4_segment_mid.wav", song_id: "classical_s4", segment_type: "mid" },
+
+  { genre: "math_rock", filename: "math_rock_song1_segment_start.wav", song_id: "math_rock_s1", segment_type: "start" },
+  { genre: "math_rock", filename: "math_rock_song1_segment_mid.wav", song_id: "math_rock_s1", segment_type: "mid" },
+  { genre: "math_rock", filename: "math_rock_song2_segment_start.wav", song_id: "math_rock_s2", segment_type: "start" },
+  { genre: "math_rock", filename: "math_rock_song2_segment_mid.wav", song_id: "math_rock_s2", segment_type: "mid" },
+  { genre: "math_rock", filename: "math_rock_song3_segment_start.wav", song_id: "math_rock_s3", segment_type: "start" },
+  { genre: "math_rock", filename: "math_rock_song3_segment_mid.wav", song_id: "math_rock_s3", segment_type: "mid" },
+  { genre: "math_rock", filename: "math_rock_song4_segment_start.wav", song_id: "math_rock_s4", segment_type: "start" },
+  { genre: "math_rock", filename: "math_rock_song4_segment_mid.wav", song_id: "math_rock_s4", segment_type: "mid" },
+
+  { genre: "pop_dance", filename: "pop_dance_song1_segment_start.wav", song_id: "pop_dance_s1", segment_type: "start" },
+  { genre: "pop_dance", filename: "pop_dance_song1_segment_mid.wav", song_id: "pop_dance_s1", segment_type: "mid" },
+  { genre: "pop_dance", filename: "pop_dance_song2_segment_start.wav", song_id: "pop_dance_s2", segment_type: "start" },
+  { genre: "pop_dance", filename: "pop_dance_song2_segment_mid.wav", song_id: "pop_dance_s2", segment_type: "mid" },
+  { genre: "pop_dance", filename: "pop_dance_song3_segment_start.wav", song_id: "pop_dance_s3", segment_type: "start" },
+  { genre: "pop_dance", filename: "pop_dance_song3_segment_mid.wav", song_id: "pop_dance_s3", segment_type: "mid" },
+  { genre: "pop_dance", filename: "pop_dance_song4_segment_start.wav", song_id: "pop_dance_s4", segment_type: "start" },
+  { genre: "pop_dance", filename: "pop_dance_song4_segment_mid.wav", song_id: "pop_dance_s4", segment_type: "mid" },
+
+  { genre: "jazz", filename: "jazz_song1_segment_start.wav", song_id: "jazz_s1", segment_type: "start" },
+  { genre: "jazz", filename: "jazz_song1_segment_mid.wav", song_id: "jazz_s1", segment_type: "mid" },
+  { genre: "jazz", filename: "jazz_song2_segment_start.wav", song_id: "jazz_s2", segment_type: "start" },
+  { genre: "jazz", filename: "jazz_song2_segment_mid.wav", song_id: "jazz_s2", segment_type: "mid" },
+  { genre: "jazz", filename: "jazz_song3_segment_start.wav", song_id: "jazz_s3", segment_type: "start" },
+  { genre: "jazz", filename: "jazz_song3_segment_mid.wav", song_id: "jazz_s3", segment_type: "mid" },
+  { genre: "jazz", filename: "jazz_song4_segment_start.wav", song_id: "jazz_s4", segment_type: "start" },
+  { genre: "jazz", filename: "jazz_song4_segment_mid.wav", song_id: "jazz_s4", segment_type: "mid" },
+
+  { genre: "scandipop", filename: "scandipop_song1_segment_start.wav", song_id: "scandipop_s1", segment_type: "start" },
+  { genre: "scandipop", filename: "scandipop_song1_segment_mid.wav", song_id: "scandipop_s1", segment_type: "mid" },
+  { genre: "scandipop", filename: "scandipop_song2_segment_start.wav", song_id: "scandipop_s2", segment_type: "start" },
+  { genre: "scandipop", filename: "scandipop_song2_segment_mid.wav", song_id: "scandipop_s2", segment_type: "mid" },
+  { genre: "scandipop", filename: "scandipop_song3_segment_start.wav", song_id: "scandipop_s3", segment_type: "start" },
+  { genre: "scandipop", filename: "scandipop_song3_segment_mid.wav", song_id: "scandipop_s3", segment_type: "mid" },
+  { genre: "scandipop", filename: "scandipop_song4_segment_start.wav", song_id: "scandipop_s4", segment_type: "start" },
+  { genre: "scandipop", filename: "scandipop_song4_segment_mid.wav", song_id: "scandipop_s4", segment_type: "mid" },
+
+  { genre: "jazz_pop", filename: "jazz_pop_song1_segment_start.wav", song_id: "jazz_pop_s1", segment_type: "start" },
+  { genre: "jazz_pop", filename: "jazz_pop_song1_segment_mid.wav", song_id: "jazz_pop_s1", segment_type: "mid" },
+  { genre: "jazz_pop", filename: "jazz_pop_song2_segment_start.wav", song_id: "jazz_pop_s2", segment_type: "start" },
+  { genre: "jazz_pop", filename: "jazz_pop_song2_segment_mid.wav", song_id: "jazz_pop_s2", segment_type: "mid" },
+  { genre: "jazz_pop", filename: "jazz_pop_song3_segment_start.wav", song_id: "jazz_pop_s3", segment_type: "start" },
+  { genre: "jazz_pop", filename: "jazz_pop_song3_segment_mid.wav", song_id: "jazz_pop_s3", segment_type: "mid" },
+  { genre: "jazz_pop", filename: "jazz_pop_song4_segment_start.wav", song_id: "jazz_pop_s4", segment_type: "start" },
+  { genre: "jazz_pop", filename: "jazz_pop_song4_segment_mid.wav", song_id: "jazz_pop_s4", segment_type: "mid" }
+];
+
+// ===== 改進的音樂選擇邏輯 =====
+const selectMusic = () => {
+  const selected = [];
+  
+  allGenres.forEach(genre => {
+    // 獲取該曲風的所有歌曲
+    const genreSongs = [...new Set(
+      musicFiles
+        .filter(m => m.genre === genre)
+        .map(m => m.song_id)
+    )];
+    
+    // 如果有足夠的歌曲，選擇兩首不同的
+    if (genreSongs.length >= 2) {
+      const shuffled = shuffleArray(genreSongs);
+      const song1 = shuffled[0];
+      const song2 = shuffled[1];
+      
+      // 為第一首歌選擇 start，第二首歌選擇 mid
+      const startSegment = musicFiles.find(
+        m => m.genre === genre && 
+             m.song_id === song1 && 
+             m.segment_type === "start"
+      );
+      const midSegment = musicFiles.find(
+        m => m.genre === genre && 
+             m.song_id === song2 && 
+             m.segment_type === "mid"
+      );
+      
+      if (startSegment) selected.push(startSegment);
+      if (midSegment) selected.push(midSegment);
+    } else if (genreSongs.length === 1) {
+      // 如果只有一首歌，就選擇它的兩個片段
+      const song = genreSongs[0];
+      const segments = musicFiles.filter(
+        m => m.genre === genre && m.song_id === song
+      );
+      selected.push(...segments);
+    }
+  });
+  
+  return shuffleArray(selected);
+};
+
+// Google Form configuration
+const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSctUuvb1W0yWW8pUoFJ917v-eTWk_RCyWYx7w1TPhXUgq9JMA/formResponse';
+const GOOGLE_FORM_FIELD_IDS = {
+  participantId: 'entry.2079124097',
+  age: 'entry.1384813390',
+  gender: 'entry.1976005518',
+  musicalBackground: 'entry.1456370923',
+  theory: 'entry.1499473583',
+  listenFrequency: 'entry.1347606183',
+  liveFrequency: 'entry.150689753',
+  listeningEnvironment: 'entry.1276443968',
+  experimentDuration: 'entry.1956115892',
+  totalPlays: 'entry.2136283044',
+  avgPlaysPerStimulus: 'entry.1299717200',
+  stimulus1: 'entry.1284424283',
+  stimulus2: 'entry.702331979',
+  stimulus3: 'entry.547457976',
+  stimulus4: 'entry.1788793290',
+  stimulus5: 'entry.1194166235',
+  stimulus6: 'entry.1777131518',
+  stimulus7: 'entry.319567093',
+  stimulus8: 'entry.858181290',
+  stimulus9: 'entry.452409364',
+  stimulus10: 'entry.1461352272',
+  stimulus11: 'entry.1523437309',
+  stimulus12: 'entry.387011442',
+};
+
+// ===== 主要組件 =====
 const MusicExperimentApp = () => {
   // State management
   const [currentScreen, setCurrentScreen] = useState('intro'); // intro, loading, experiment, completion
@@ -7,7 +175,7 @@ const MusicExperimentApp = () => {
   const [experimentResults, setExperimentResults] = useState({
     participantId: '',
     demographicInfo: {},
-    stimuli: [], // Array to hold individual stimulus responses
+    stimuli: [],
     experimentSummary: {}
   });
 
@@ -20,7 +188,7 @@ const MusicExperimentApp = () => {
     listenFrequency: '',
     liveFrequency: '',
     listeningEnvironment: '',
-    participantId: '' // Optional participant ID
+    participantId: ''
   });
 
   // Experiment states
@@ -29,8 +197,8 @@ const MusicExperimentApp = () => {
   const [playCountsPerStimulus, setPlayCountsPerStimulus] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playProgress, setPlayProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(false); // New state for loading status
-  const [preloadProgress, setPreloadProgress] = useState(0); // Track preload progress
+  const [isLoading, setIsLoading] = useState(false);
+  const [preloadProgress, setPreloadProgress] = useState(0);
 
   // Response states (for the current stimulus)
   const [responses, setResponses] = useState({
@@ -49,108 +217,87 @@ const MusicExperimentApp = () => {
   const experimentStartTimeRef = useRef(null);
   const currentStimulusStartTimeRef = useRef(null);
   const playIntervalRef = useRef(null);
-  const preloadedAudioRef = useRef({}); // Store preloaded audio objects
+  const preloadedAudioRef = useRef({});
 
-  // Constants
-  const totalStimuliExpected = 12; // 6 genres * 2 segments/genre
-  const allGenres = ["classical", "math_rock", "pop_dance", "jazz", "scandipop", "jazz_pop"];
-
-  // Music files data
-    const musicFiles = [
-    { genre: "classical", filename: "classical_song1_segment_start.wav", song_id: "classical_s1", segment_type: "start" },
-    { genre: "classical", filename: "classical_song1_segment_mid.wav", song_id: "classical_s1", segment_type: "mid" },
-    { genre: "classical", filename: "classical_song2_segment_start.wav", song_id: "classical_s2", segment_type: "start" },
-    { genre: "classical", filename: "classical_song2_segment_mid.wav", song_id: "classical_s2", segment_type: "mid" },
-    { genre: "classical", filename: "classical_song3_segment_start.wav", song_id: "classical_s3", segment_type: "start" },
-    { genre: "classical", filename: "classical_song3_segment_mid.wav", song_id: "classical_s3", segment_type: "mid" },
-    { genre: "classical", filename: "classical_song4_segment_start.wav", song_id: "classical_s4", segment_type: "start" },
-    { genre: "classical", filename: "classical_song4_segment_mid.wav", song_id: "classical_s4", segment_type: "mid" },
-
-    { genre: "math_rock", filename: "math_rock_song1_segment_start.wav", song_id: "math_rock_s1", segment_type: "start" },
-    { genre: "math_rock", filename: "math_rock_song1_segment_mid.wav", song_id: "math_rock_s1", segment_type: "mid" },
-    { genre: "math_rock", filename: "math_rock_song2_segment_start.wav", song_id: "math_rock_s2", segment_type: "start" },
-    { genre: "math_rock", filename: "math_rock_song2_segment_mid.wav", song_id: "math_rock_s2", segment_type: "mid" },
-    { genre: "math_rock", filename: "math_rock_song3_segment_start.wav", song_id: "math_rock_s3", segment_type: "start" },
-    { genre: "math_rock", filename: "math_rock_song3_segment_mid.wav", song_id: "math_rock_s3", segment_type: "mid" },
-    { genre: "math_rock", filename: "math_rock_song4_segment_start.wav", song_id: "math_rock_s4", segment_type: "start" },
-    { genre: "math_rock", filename: "math_rock_song4_segment_mid.wav", song_id: "math_rock_s4", segment_type: "mid" },
-
-    { genre: "pop_dance", filename: "pop_dance_song1_segment_start.wav", song_id: "pop_dance_s1", segment_type: "start" },
-    { genre: "pop_dance", filename: "pop_dance_song1_segment_mid.wav", song_id: "pop_dance_s1", segment_type: "mid" },
-    { genre: "pop_dance", filename: "pop_dance_song2_segment_start.wav", song_id: "pop_dance_s2", segment_type: "start" },
-    { genre: "pop_dance", filename: "pop_dance_song2_segment_mid.wav", song_id: "pop_dance_s2", segment_type: "mid" },
-    { genre: "pop_dance", filename: "pop_dance_song3_segment_start.wav", song_id: "pop_dance_s3", segment_type: "start" },
-    { genre: "pop_dance", filename: "pop_dance_song3_segment_mid.wav", song_id: "pop_dance_s3", segment_type: "mid" },
-    { genre: "pop_dance", filename: "pop_dance_song4_segment_start.wav", song_id: "pop_dance_s4", segment_type: "start" },
-    { genre: "pop_dance", filename: "pop_dance_song4_segment_mid.wav", song_id: "pop_dance_s4", segment_type: "mid" },
-
-    { genre: "jazz", filename: "jazz_song1_segment_start.wav", song_id: "jazz_s1", segment_type: "start" },
-    { genre: "jazz", filename: "jazz_song1_segment_mid.wav", song_id: "jazz_s1", segment_type: "mid" },
-    { genre: "jazz", filename: "jazz_song2_segment_start.wav", song_id: "jazz_s2", segment_type: "start" },
-    { genre: "jazz", filename: "jazz_song2_segment_mid.wav", song_id: "jazz_s2", segment_type: "mid" },
-    { genre: "jazz", filename: "jazz_song3_segment_start.wav", song_id: "jazz_s3", segment_type: "start" },
-    { genre: "jazz", filename: "jazz_song3_segment_mid.wav", song_id: "jazz_s3", segment_type: "mid" },
-    { genre: "jazz", filename: "jazz_song4_segment_start.wav", song_id: "jazz_s4", segment_type: "start" },
-    { genre: "jazz", filename: "jazz_song4_segment_mid.wav", song_id: "jazz_s4", segment_type: "mid" },
-
-    { genre: "scandipop", filename: "scandipop_song1_segment_start.wav", song_id: "scandipop_s1", segment_type: "start" },
-    { genre: "scandipop", filename: "scandipop_song1_segment_mid.wav", song_id: "scandipop_s1", segment_type: "mid" },
-    { genre: "scandipop", filename: "scandipop_song2_segment_start.wav", song_id: "scandipop_s2", segment_type: "start" },
-    { genre: "scandipop", filename: "scandipop_song2_segment_mid.wav", song_id: "scandipop_s2", segment_type: "mid" },
-    { genre: "scandipop", filename: "scandipop_song3_segment_start.wav", song_id: "scandipop_s3", segment_type: "start" },
-    { genre: "scandipop", filename: "scandipop_song3_segment_mid.wav", song_id: "scandipop_s3", segment_type: "mid" },
-    { genre: "scandipop", filename: "scandipop_song4_segment_start.wav", song_id: "scandipop_s4", segment_type: "start" },
-    { genre: "scandipop", filename: "scandipop_song4_segment_mid.wav", song_id: "scandipop_s4", segment_type: "mid" },
-
-    { genre: "jazz_pop", filename: "jazz_pop_song1_segment_start.wav", song_id: "jazz_pop_s1", segment_type: "start" },
-    { genre: "jazz_pop", filename: "jazz_pop_song1_segment_mid.wav", song_id: "jazz_pop_s1", segment_type: "mid" },
-    { genre: "jazz_pop", filename: "jazz_pop_song2_segment_start.wav", song_id: "jazz_pop_s2", segment_type: "start" },
-    { genre: "jazz_pop", filename: "jazz_pop_song2_segment_mid.wav", song_id: "jazz_pop_s2", segment_type: "mid" },
-    { genre: "jazz_pop", filename: "jazz_pop_song3_segment_start.wav", song_id: "jazz_pop_s3", segment_type: "start" },
-    { genre: "jazz_pop", filename: "jazz_pop_song3_segment_mid.wav", song_id: "jazz_pop_s3", segment_type: "mid" },
-    { genre: "jazz_pop", filename: "jazz_pop_song4_segment_start.wav", song_id: "jazz_pop_s4", segment_type: "start" },
-    { genre: "jazz_pop", filename: "jazz_pop_song4_segment_mid.wav", song_id: "jazz_pop_s4", segment_type: "mid" }
-    ];
-
-
-  // Utility functions
-  const generateParticipantId = () => {
-    const timestamp = new Date().getTime();
-    const randomPart = Math.floor(Math.random() * 10000);
-    return `P${timestamp}-${randomPart}`;
-  };
-
-  const shuffleArray = (array) => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  // Audio event handlers
+  const handleAudioEnded = useCallback(() => {
+    if (playIntervalRef.current) {
+      clearInterval(playIntervalRef.current);
+      playIntervalRef.current = null;
     }
-    return newArray;
-  };
+    setIsPlaying(false);
+    setHasPlayedStimulus(true);
+    setPlayProgress(100);
+  }, []);
 
-  // Preload audio files to reduce delay
+  const handleAudioError = useCallback((e) => {
+    console.error('Audio file load/decode error:', e);
+    setIsPlaying(false);
+    setIsLoading(false);
+    if (playIntervalRef.current) {
+      clearInterval(playIntervalRef.current);
+      playIntervalRef.current = null;
+    }
+    setPlayProgress(0);
+  }, []);
+
+  // Initialize audio element
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.addEventListener('ended', handleAudioEnded);
+      audioRef.current.addEventListener('error', handleAudioError);
+    }
+
+    return () => {
+      // Clean up preloaded audio
+      Object.values(preloadedAudioRef.current).forEach(audio => {
+        if (audio && typeof audio.pause === 'function') {
+          audio.pause();
+          audio.src = '';
+        }
+      });
+      preloadedAudioRef.current = {};
+
+      // Clean up main audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current.removeEventListener('ended', handleAudioEnded);
+        audioRef.current.removeEventListener('error', handleAudioError);
+        audioRef.current = null;
+      }
+
+      // Clean up timer
+      if (playIntervalRef.current) {
+        clearInterval(playIntervalRef.current);
+        playIntervalRef.current = null;
+      }
+    };
+  }, [handleAudioEnded, handleAudioError]);
+
+  // Preload audio files
   const preloadAudio = async (stimuli) => {
     setPreloadProgress(0);
     const total = stimuli.length;
     let loaded = 0;
 
-    const loadPromises = stimuli.map((stimulus, index) => {
+    const loadPromises = stimuli.map((stimulus) => {
       return new Promise((resolve) => {
-        const audio = new Audio(`${process.env.PUBLIC_URL}/music/${stimulus.genre}/${stimulus.filename}`);
+        const filePath = getStimulusFilePath(stimulus, process.env.PUBLIC_URL);
+        const audio = new Audio(filePath);
         audio.preload = "auto";
-        audio.load();
         
         const handleCanPlayThrough = () => {
           loaded++;
           setPreloadProgress((loaded / total) * 100);
-          preloadedAudioRef.current[stimulus.file] = audio;
+          preloadedAudioRef.current[filePath] = audio;
           audio.removeEventListener('canplaythrough', handleCanPlayThrough);
           resolve();
         };
 
         const handleError = () => {
-          console.warn(`Failed to preload: ${stimulus.file}`);
+          console.warn(`Failed to preload: ${filePath}`);
           loaded++;
           setPreloadProgress((loaded / total) * 100);
           resolve();
@@ -158,60 +305,12 @@ const MusicExperimentApp = () => {
 
         audio.addEventListener('canplaythrough', handleCanPlayThrough);
         audio.addEventListener('error', handleError);
-        //audio.src = stimulus.file;
-        audio.src = `${process.env.PUBLIC_URL}/music/${stimulus.genre}/${stimulus.filename}`;
-
         audio.load();
       });
     });
 
     await Promise.all(loadPromises);
   };
-
-    // Refined music selection logic
-    const selectMusicWithDiversity = () => {
-    const selected = [];
-    
-    allGenres.forEach(genre => {
-        // 獲取該曲風的所有歌曲
-        const genreSongs = [...new Set(
-        musicFiles
-            .filter(m => m.genre === genre)
-            .map(m => m.song_id)
-        )];
-        
-        // 如果有足夠的歌曲，選擇兩首不同的
-        if (genreSongs.length >= 2) {
-        const shuffled = shuffleArray(genreSongs);
-        const song1 = shuffled[0];
-        const song2 = shuffled[1];
-        
-        // 為第一首歌選擇 start，第二首歌選擇 mid
-        const startSegment = musicFiles.find(
-            m => m.genre === genre && 
-                m.song_id === song1 && 
-                m.segment_type === "start"
-        );
-        const midSegment = musicFiles.find(
-            m => m.genre === genre && 
-                m.song_id === song2 && 
-                m.segment_type === "mid"
-        );
-        
-        if (startSegment) selected.push(startSegment);
-        if (midSegment) selected.push(midSegment);
-        } else {
-        // 如果只有一首歌，就用原本的邏輯
-        const song = genreSongs[0];
-        const segments = musicFiles.filter(
-            m => m.genre === genre && m.song_id === song
-        );
-        selected.push(...segments);
-        }
-    });
-    
-    return shuffleArray(selected);
-    };
 
   // Event handlers
   const handleFormChange = (e) => {
@@ -245,7 +344,7 @@ const MusicExperimentApp = () => {
     experimentStartTimeRef.current = new Date();
     const participantId = formData.participantId || generateParticipantId();
 
-    // Select music based on new logic
+    // Select music
     const selected = selectMusic();
     if (selected.length !== totalStimuliExpected) {
       console.error(`Expected ${totalStimuliExpected} stimuli, but got ${selected.length}. Check music selection logic.`);
@@ -276,55 +375,11 @@ const MusicExperimentApp = () => {
     currentStimulusStartTimeRef.current = new Date();
   };
 
-  // Audio event handlers
-  const handleAudioEnded = useCallback(() => {
-    if (playIntervalRef.current) {
-      clearInterval(playIntervalRef.current);
-      playIntervalRef.current = null;
-    }
-    setIsPlaying(false);
-    setHasPlayedStimulus(true);
-    setPlayProgress(100);
-  }, []);
-
-  const handleAudioError = useCallback((e) => {
-    console.error('Audio file load/decode error:', e);
-    setIsPlaying(false);
-    setIsLoading(false);
-    if (playIntervalRef.current) {
-      clearInterval(playIntervalRef.current);
-      playIntervalRef.current = null;
-    }
-    setPlayProgress(0);
-  }, []);
-
-  // Initialize audio element
-  useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.addEventListener('ended', handleAudioEnded);
-      audioRef.current.addEventListener('error', handleAudioError);
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current.removeEventListener('ended', handleAudioEnded);
-        audioRef.current.removeEventListener('error', handleAudioError);
-        audioRef.current = null;
-      }
-      if (playIntervalRef.current) {
-        clearInterval(playIntervalRef.current);
-        playIntervalRef.current = null;
-      }
-    };
-  }, [handleAudioEnded, handleAudioError]);
-
   const playCurrentStimulus = () => {
     if (!selectedStimuli[currentStimulusIndex] || !audioRef.current) return;
 
     const stimulus = selectedStimuli[currentStimulusIndex];
+    const filePath = getStimulusFilePath(stimulus, process.env.PUBLIC_URL);
 
     // Update play count
     const newPlayCounts = [...playCountsPerStimulus];
@@ -336,12 +391,12 @@ const MusicExperimentApp = () => {
     setPlayProgress(0);
 
     // Use preloaded audio if available
-    const preloadedAudio = preloadedAudioRef.current[stimulus.file];
+    const preloadedAudio = preloadedAudioRef.current[filePath];
     if (preloadedAudio && preloadedAudio.readyState >= 3) {
       audioRef.current.src = preloadedAudio.src;
       setIsLoading(false);
     } else {
-      audioRef.current.src = stimulus.file;
+      audioRef.current.src = filePath;
       audioRef.current.load();
     }
 
@@ -356,16 +411,15 @@ const MusicExperimentApp = () => {
     });
 
     // Progress tracking
-    const startTime = Date.now();
     if (playIntervalRef.current) {
       clearInterval(playIntervalRef.current);
     }
+    
     playIntervalRef.current = setInterval(() => {
       const currentAudio = audioRef.current;
-      if (currentAudio) {
-        const elapsed = (Date.now() - startTime) / 1000;
-        const duration = currentAudio.duration || 0;
-        const progress = duration > 0 ? (elapsed / duration) * 100 : 0;
+      if (currentAudio && currentAudio.duration) {
+        const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+        setPlayProgress(progress);
 
         if (currentAudio.ended || progress >= 100) {
           if (playIntervalRef.current) {
@@ -375,8 +429,6 @@ const MusicExperimentApp = () => {
           setIsPlaying(false);
           setHasPlayedStimulus(true);
           setPlayProgress(100);
-        } else {
-          setPlayProgress(progress);
         }
       }
     }, 100);
@@ -414,7 +466,7 @@ const MusicExperimentApp = () => {
     const questionDurationMs = questionEndTime - currentStimulusStartTimeRef.current;
 
     const stimulusResponse = {
-      stimulusIndex: currentStimulusIndex + 1, // Add stimulus index for debugging
+      stimulusIndex: currentStimulusIndex + 1,
       genre: currentStimulusData.genre,
       song_id: currentStimulusData.song_id,
       segment_type: currentStimulusData.segment_type,
@@ -441,7 +493,6 @@ const MusicExperimentApp = () => {
       
       // Check if this is the last stimulus
       if (currentStimulusIndex + 1 >= totalStimuliExpected) {
-        // Complete experiment with updated results
         completeExperimentWithResults(updatedResults);
       }
       
@@ -469,34 +520,6 @@ const MusicExperimentApp = () => {
     }
   };
 
-  // Google Form configuration
-  const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSctUuvb1W0yWW8pUoFJ917v-eTWk_RCyWYx7w1TPhXUgq9JMA/formResponse';
-  const GOOGLE_FORM_FIELD_IDS = {
-    participantId: 'entry.2079124097',
-    age: 'entry.1384813390',
-    gender: 'entry.1976005518',
-    musicalBackground: 'entry.1456370923',
-    theory: 'entry.1499473583',
-    listenFrequency: 'entry.1347606183',
-    liveFrequency: 'entry.150689753',
-    listeningEnvironment: 'entry.1276443968',
-    experimentDuration: 'entry.1956115892',
-    totalPlays: 'entry.2136283044',
-    avgPlaysPerStimulus: 'entry.1299717200',
-    stimulus1: 'entry.1284424283',
-    stimulus2: 'entry.702331979',
-    stimulus3: 'entry.547457976',
-    stimulus4: 'entry.1788793290',
-    stimulus5: 'entry.1194166235',
-    stimulus6: 'entry.1777131518',
-    stimulus7: 'entry.319567093',
-    stimulus8: 'entry.858181290',
-    stimulus9: 'entry.452409364',
-    stimulus10: 'entry.1461352272',
-    stimulus11: 'entry.1523437309',
-    stimulus12: 'entry.387011442',
-  };
-
   // Submit to Google Form
   const submitToGoogleForm = (results) => {
     const params = new URLSearchParams();
@@ -520,14 +543,12 @@ const MusicExperimentApp = () => {
       params.append(GOOGLE_FORM_FIELD_IDS.avgPlaysPerStimulus, 
         String(results.experimentSummary.playStatistics?.averagePlaysPerStimulus || 0));
       params.append('pageHistory', '0');
-
     }
 
     // Each stimulus response
     results.stimuli.forEach((stim, idx) => {
       const fieldId = GOOGLE_FORM_FIELD_IDS[`stimulus${idx + 1}`];
       if (fieldId) {
-        // Create a compact representation for Google Form
         const stimulusData = `Genre: ${stim.genre}, Segment: ${stim.segment_type}, Like: ${stim.likeRating}, Complex: ${stim.complexRating}, Familiar: ${stim.familiarRating}, Structure: ${stim.structureRating}, Emotion: ${stim.emotionRating}, Engagement: ${stim.engagementRating}, Component: ${stim.selectedComponent}, GenreGuess: ${stim.genreSelection}, Plays: ${stim.totalPlayCount}`;
         params.append(fieldId, stimulusData);
       }
@@ -577,7 +598,7 @@ const MusicExperimentApp = () => {
       participantId: data.participantId,
       demographicInfo: JSON.stringify(data.demographicInfo),
       experimentSummary: JSON.stringify(data.experimentSummary),
-      totalStimuli: data.stimuli.length // Add count for verification
+      totalStimuli: data.stimuli.length
     };
 
     // Add each stimulus response
@@ -648,12 +669,6 @@ const MusicExperimentApp = () => {
     submitToGoogleForm(finalResults);
     submitDataToFormspree(finalResults);
     submitDataToLocalServer(finalResults);
-  };
-
-  const completeExperiment = () => {
-    // This function is now replaced by completeExperimentWithResults
-    // to ensure we use the most up-to-date results
-    completeExperimentWithResults(experimentResults);
   };
 
   const downloadResults = () => {
@@ -1084,7 +1099,7 @@ const MusicExperimentApp = () => {
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-blue-500">
+               <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-blue-500">
                 <h3 className="text-lg font-semibold mb-4">您認為這首音樂屬於哪種曲風？</h3>
                 <p className="mb-4 text-gray-700">請選擇您認為最符合這段音樂的曲風分類。若不確定，可選擇「無法辨識」。</p>
                 <select
@@ -1102,7 +1117,6 @@ const MusicExperimentApp = () => {
                   <option value="techno">科技舞曲 (Techno)</option>
                   <option value="math_rock">數字搖滾 (Math Rock)</option>
                   <option value="jazz">爵士樂 (Jazz)</option>
-                  <option value="scandipop">斯堪地流行 (Scandipop)</option>
                   <option value="tropical_house">熱帶浩室 (Tropical House)</option>
                   <option value="other">其他</option>
                   <option value="not_sure">無法辨識</option>
