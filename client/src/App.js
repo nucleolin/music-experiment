@@ -34,7 +34,7 @@ const MusicExperimentApp = () => {
 
   // Response states (for the current stimulus)
   const [responses, setResponses] = useState({
-    likeRating: 5,
+    likeRating: 4,
     complexRating: 4,
     familiarRating: 4,
     structureRating: '',
@@ -56,67 +56,62 @@ const MusicExperimentApp = () => {
   const allGenres = ["classical", "math_rock", "pop_dance", "jazz", "scandipop", "jazz_pop"];
 
   // Music files data
-  const musicFiles = [
-    // Classical (4 songs * 2 segments = 8 segments)
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song1_segment_start.wav", genre: "classical", song_id: "classical_s1", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song1_segment_mid.wav", genre: "classical", song_id: "classical_s1", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song2_segment_start.wav", genre: "classical", song_id: "classical_s2", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song2_segment_mid.wav", genre: "classical", song_id: "classical_s2", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song3_segment_start.wav", genre: "classical", song_id: "classical_s3", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song3_segment_mid.wav", genre: "classical", song_id: "classical_s3", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song4_segment_start.wav", genre: "classical", song_id: "classical_s4", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song4_segment_mid.wav", genre: "classical", song_id: "classical_s4", segment_type: "mid" },
+    const musicFiles = [
+    { genre: "classical", filename: "classical_song1_segment_start.wav", song_id: "classical_s1", segment_type: "start" },
+    { genre: "classical", filename: "classical_song1_segment_mid.wav", song_id: "classical_s1", segment_type: "mid" },
+    { genre: "classical", filename: "classical_song2_segment_start.wav", song_id: "classical_s2", segment_type: "start" },
+    { genre: "classical", filename: "classical_song2_segment_mid.wav", song_id: "classical_s2", segment_type: "mid" },
+    { genre: "classical", filename: "classical_song3_segment_start.wav", song_id: "classical_s3", segment_type: "start" },
+    { genre: "classical", filename: "classical_song3_segment_mid.wav", song_id: "classical_s3", segment_type: "mid" },
+    { genre: "classical", filename: "classical_song4_segment_start.wav", song_id: "classical_s4", segment_type: "start" },
+    { genre: "classical", filename: "classical_song4_segment_mid.wav", song_id: "classical_s4", segment_type: "mid" },
 
-    // Math Rock (4 songs * 2 segments = 8 segments)
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song1_segment_start.wav", genre: "math_rock", song_id: "math_rock_s1", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song1_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s1", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song2_segment_start.wav", genre: "math_rock", song_id: "math_rock_s2", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song2_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s2", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song3_segment_start.wav", genre: "math_rock", song_id: "math_rock_s3", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song3_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s3", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song4_segment_start.wav", genre: "math_rock", song_id: "math_rock_s4", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song4_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s4", segment_type: "mid" },
+    { genre: "math_rock", filename: "math_rock_song1_segment_start.wav", song_id: "math_rock_s1", segment_type: "start" },
+    { genre: "math_rock", filename: "math_rock_song1_segment_mid.wav", song_id: "math_rock_s1", segment_type: "mid" },
+    { genre: "math_rock", filename: "math_rock_song2_segment_start.wav", song_id: "math_rock_s2", segment_type: "start" },
+    { genre: "math_rock", filename: "math_rock_song2_segment_mid.wav", song_id: "math_rock_s2", segment_type: "mid" },
+    { genre: "math_rock", filename: "math_rock_song3_segment_start.wav", song_id: "math_rock_s3", segment_type: "start" },
+    { genre: "math_rock", filename: "math_rock_song3_segment_mid.wav", song_id: "math_rock_s3", segment_type: "mid" },
+    { genre: "math_rock", filename: "math_rock_song4_segment_start.wav", song_id: "math_rock_s4", segment_type: "start" },
+    { genre: "math_rock", filename: "math_rock_song4_segment_mid.wav", song_id: "math_rock_s4", segment_type: "mid" },
 
-    // Pop Dance (8 segments)
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song1_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s1", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song1_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s1", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song2_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s2", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song2_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s2", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song3_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s3", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song3_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s3", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song4_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s4", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song4_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s4", segment_type: "mid" },
+    { genre: "pop_dance", filename: "pop_dance_song1_segment_start.wav", song_id: "pop_dance_s1", segment_type: "start" },
+    { genre: "pop_dance", filename: "pop_dance_song1_segment_mid.wav", song_id: "pop_dance_s1", segment_type: "mid" },
+    { genre: "pop_dance", filename: "pop_dance_song2_segment_start.wav", song_id: "pop_dance_s2", segment_type: "start" },
+    { genre: "pop_dance", filename: "pop_dance_song2_segment_mid.wav", song_id: "pop_dance_s2", segment_type: "mid" },
+    { genre: "pop_dance", filename: "pop_dance_song3_segment_start.wav", song_id: "pop_dance_s3", segment_type: "start" },
+    { genre: "pop_dance", filename: "pop_dance_song3_segment_mid.wav", song_id: "pop_dance_s3", segment_type: "mid" },
+    { genre: "pop_dance", filename: "pop_dance_song4_segment_start.wav", song_id: "pop_dance_s4", segment_type: "start" },
+    { genre: "pop_dance", filename: "pop_dance_song4_segment_mid.wav", song_id: "pop_dance_s4", segment_type: "mid" },
 
-    // Jazz (8 segments)
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song1_segment_start.wav", genre: "jazz", song_id: "jazz_s1", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song1_segment_mid.wav", genre: "jazz", song_id: "jazz_s1", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song2_segment_start.wav", genre: "jazz", song_id: "jazz_s2", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song2_segment_mid.wav", genre: "jazz", song_id: "jazz_s2", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song3_segment_start.wav", genre: "jazz", song_id: "jazz_s3", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song3_segment_mid.wav", genre: "jazz", song_id: "jazz_s3", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song4_segment_start.wav", genre: "jazz", song_id: "jazz_s4", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song4_segment_mid.wav", genre: "jazz", song_id: "jazz_s4", segment_type: "mid" },
+    { genre: "jazz", filename: "jazz_song1_segment_start.wav", song_id: "jazz_s1", segment_type: "start" },
+    { genre: "jazz", filename: "jazz_song1_segment_mid.wav", song_id: "jazz_s1", segment_type: "mid" },
+    { genre: "jazz", filename: "jazz_song2_segment_start.wav", song_id: "jazz_s2", segment_type: "start" },
+    { genre: "jazz", filename: "jazz_song2_segment_mid.wav", song_id: "jazz_s2", segment_type: "mid" },
+    { genre: "jazz", filename: "jazz_song3_segment_start.wav", song_id: "jazz_s3", segment_type: "start" },
+    { genre: "jazz", filename: "jazz_song3_segment_mid.wav", song_id: "jazz_s3", segment_type: "mid" },
+    { genre: "jazz", filename: "jazz_song4_segment_start.wav", song_id: "jazz_s4", segment_type: "start" },
+    { genre: "jazz", filename: "jazz_song4_segment_mid.wav", song_id: "jazz_s4", segment_type: "mid" },
 
-    // Scandipop (8 segments)
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song1_segment_start.wav", genre: "scandipop", song_id: "scandipop_s1", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song1_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s1", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song2_segment_start.wav", genre: "scandipop", song_id: "scandipop_s2", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song2_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s2", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song3_segment_start.wav", genre: "scandipop", song_id: "scandipop_s3", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song3_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s3", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song4_segment_start.wav", genre: "scandipop", song_id: "scandipop_s4", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song4_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s4", segment_type: "mid" },
+    { genre: "scandipop", filename: "scandipop_song1_segment_start.wav", song_id: "scandipop_s1", segment_type: "start" },
+    { genre: "scandipop", filename: "scandipop_song1_segment_mid.wav", song_id: "scandipop_s1", segment_type: "mid" },
+    { genre: "scandipop", filename: "scandipop_song2_segment_start.wav", song_id: "scandipop_s2", segment_type: "start" },
+    { genre: "scandipop", filename: "scandipop_song2_segment_mid.wav", song_id: "scandipop_s2", segment_type: "mid" },
+    { genre: "scandipop", filename: "scandipop_song3_segment_start.wav", song_id: "scandipop_s3", segment_type: "start" },
+    { genre: "scandipop", filename: "scandipop_song3_segment_mid.wav", song_id: "scandipop_s3", segment_type: "mid" },
+    { genre: "scandipop", filename: "scandipop_song4_segment_start.wav", song_id: "scandipop_s4", segment_type: "start" },
+    { genre: "scandipop", filename: "scandipop_song4_segment_mid.wav", song_id: "scandipop_s4", segment_type: "mid" },
 
-    // Jazz Pop (8 segments)
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song1_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s1", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song1_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s1", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song2_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s2", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song2_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s2", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song3_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s3", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song3_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s3", segment_type: "mid" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song4_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s4", segment_type: "start" },
-    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song4_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s4", segment_type: "mid" },
-  ];
+    { genre: "jazz_pop", filename: "jazz_pop_song1_segment_start.wav", song_id: "jazz_pop_s1", segment_type: "start" },
+    { genre: "jazz_pop", filename: "jazz_pop_song1_segment_mid.wav", song_id: "jazz_pop_s1", segment_type: "mid" },
+    { genre: "jazz_pop", filename: "jazz_pop_song2_segment_start.wav", song_id: "jazz_pop_s2", segment_type: "start" },
+    { genre: "jazz_pop", filename: "jazz_pop_song2_segment_mid.wav", song_id: "jazz_pop_s2", segment_type: "mid" },
+    { genre: "jazz_pop", filename: "jazz_pop_song3_segment_start.wav", song_id: "jazz_pop_s3", segment_type: "start" },
+    { genre: "jazz_pop", filename: "jazz_pop_song3_segment_mid.wav", song_id: "jazz_pop_s3", segment_type: "mid" },
+    { genre: "jazz_pop", filename: "jazz_pop_song4_segment_start.wav", song_id: "jazz_pop_s4", segment_type: "start" },
+    { genre: "jazz_pop", filename: "jazz_pop_song4_segment_mid.wav", song_id: "jazz_pop_s4", segment_type: "mid" }
+    ];
+
 
   // Utility functions
   const generateParticipantId = () => {
@@ -142,8 +137,9 @@ const MusicExperimentApp = () => {
 
     const loadPromises = stimuli.map((stimulus, index) => {
       return new Promise((resolve) => {
-        const audio = new Audio();
-        audio.preload = 'auto';
+        const audio = new Audio(`${process.env.PUBLIC_URL}/music/${stimulus.genre}/${stimulus.filename}`);
+        audio.preload = "auto";
+        audio.load();
         
         const handleCanPlayThrough = () => {
           loaded++;
@@ -162,7 +158,9 @@ const MusicExperimentApp = () => {
 
         audio.addEventListener('canplaythrough', handleCanPlayThrough);
         audio.addEventListener('error', handleError);
-        audio.src = stimulus.file;
+        //audio.src = stimulus.file;
+        audio.src = `${process.env.PUBLIC_URL}/music/${stimulus.genre}/${stimulus.filename}`;
+
         audio.load();
       });
     });
