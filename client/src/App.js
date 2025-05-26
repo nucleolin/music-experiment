@@ -692,7 +692,7 @@ const MusicExperimentApp = () => {
       <hr className="my-6" />
       <div className="bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-semibold mb-4 text-center">歡迎參與本次音樂感知實驗！</h2>
-        <p className="mb-4">在這個實驗中，您將聆聽12段音樂片段，並分享您對這些音樂感受進行評分反饋。</p>
+        <p className="mb-4">在這個實驗中，您將聆聽 12 段音樂片段，並分享您對這些音樂感受進行評分反饋。</p>
         <p className="mb-4">實驗總長度約 10 分鐘。為確保數據品質，請您盡可能在安靜的環境下專心聆聽並作答。</p>
         <p className="mb-6">您的回應將完全匿名，僅供研究目的使用。感謝您的時間！</p>
 
