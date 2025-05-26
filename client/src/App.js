@@ -25,96 +25,98 @@ const MusicExperimentApp = () => {
 
   // Experiment states
   const [selectedStimuli, setSelectedStimuli] = useState([]);
-  const [hasPlayedStimulus, setHasPlayedStimulus] = useState(false); // New: Tracks if current stimulus has played
-  const [playCountsPerStimulus, setPlayCountsPerStimulus] = useState([]); // Tracks play counts for each stimulus
-  const [isPlaying, setIsPlaying] = useState(false); // Tracks if audio is currently playing
-  const [playProgress, setPlayProgress] = useState(0); // For the visual progress bar
+  const [hasPlayedStimulus, setHasPlayedStimulus] = useState(false);
+  const [playCountsPerStimulus, setPlayCountsPerStimulus] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playProgress, setPlayProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false); // New state for loading status
+  const [preloadProgress, setPreloadProgress] = useState(0); // Track preload progress
 
   // Response states (for the current stimulus)
   const [responses, setResponses] = useState({
     likeRating: 5,
     complexRating: 4,
     familiarRating: 4,
-    structureRating: '', // Radio button, requires selection
-    emotionRating: '',   // Radio button, requires selection
+    structureRating: '',
+    emotionRating: '',
     engagementRating: 4,
-    selectedComponent: '', // Radio button, requires selection
-    genreSelection: ''     // Dropdown, requires selection
+    selectedComponent: '',
+    genreSelection: ''
   });
 
   // Refs
   const audioRef = useRef(null);
   const experimentStartTimeRef = useRef(null);
-  const currentStimulusStartTimeRef = useRef(null); // Tracks start time for current stimulus questions
-  const playIntervalRef = useRef(null); // For progress bar animation
+  const currentStimulusStartTimeRef = useRef(null);
+  const playIntervalRef = useRef(null);
+  const preloadedAudioRef = useRef({}); // Store preloaded audio objects
 
   // Constants
   const totalStimuliExpected = 12; // 6 genres * 2 segments/genre
-  const allGenres = ["classical", "math_rock", "pop_dance", "jazz", "scandipop", "jazz_pop"]; // New genre added
+  const allGenres = ["classical", "math_rock", "pop_dance", "jazz", "scandipop", "jazz_pop"];
 
-  // Music files data (Updated with correct genre names and song_id/segment_type structure)
+  // Music files data
   const musicFiles = [
     // Classical (4 songs * 2 segments = 8 segments)
-    { file: "music/classical/classical_song1_segment_start.wav", genre: "classical", song_id: "classical_s1", segment_type: "start" },
-    { file: "music/classical/classical_song1_segment_mid.wav", genre: "classical", song_id: "classical_s1", segment_type: "mid" },
-    { file: "music/classical/classical_song2_segment_start.wav", genre: "classical", song_id: "classical_s2", segment_type: "start" },
-    { file: "music/classical/classical_song2_segment_mid.wav", genre: "classical", song_id: "classical_s2", segment_type: "mid" },
-    { file: "music/classical/classical_song3_segment_start.wav", genre: "classical", song_id: "classical_s3", segment_type: "start" },
-    { file: "music/classical/classical_song3_segment_mid.wav", genre: "classical", song_id: "classical_s3", segment_type: "mid" },
-    { file: "music/classical/classical_song4_segment_start.wav", genre: "classical", song_id: "classical_s4", segment_type: "start" },
-    { file: "music/classical/classical_song4_segment_mid.wav", genre: "classical", song_id: "classical_s4", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song1_segment_start.wav", genre: "classical", song_id: "classical_s1", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song1_segment_mid.wav", genre: "classical", song_id: "classical_s1", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song2_segment_start.wav", genre: "classical", song_id: "classical_s2", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song2_segment_mid.wav", genre: "classical", song_id: "classical_s2", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song3_segment_start.wav", genre: "classical", song_id: "classical_s3", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song3_segment_mid.wav", genre: "classical", song_id: "classical_s3", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song4_segment_start.wav", genre: "classical", song_id: "classical_s4", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/classical/classical_song4_segment_mid.wav", genre: "classical", song_id: "classical_s4", segment_type: "mid" },
 
     // Math Rock (4 songs * 2 segments = 8 segments)
-    { file: "music/math_rock/math_rock_song1_segment_start.wav", genre: "math_rock", song_id: "math_rock_s1", segment_type: "start" },
-    { file: "music/math_rock/math_rock_song1_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s1", segment_type: "mid" },
-    { file: "music/math_rock/math_rock_song2_segment_start.wav", genre: "math_rock", song_id: "math_rock_s2", segment_type: "start" },
-    { file: "music/math_rock/math_rock_song2_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s2", segment_type: "mid" },
-    { file: "music/math_rock/math_rock_song3_segment_start.wav", genre: "math_rock", song_id: "math_rock_s3", segment_type: "start" },
-    { file: "music/math_rock/math_rock_song3_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s3", segment_type: "mid" },
-    { file: "music/math_rock/math_rock_song4_segment_start.wav", genre: "math_rock", song_id: "math_rock_s4", segment_type: "start" },
-    { file: "music/math_rock/math_rock_song4_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s4", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song1_segment_start.wav", genre: "math_rock", song_id: "math_rock_s1", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song1_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s1", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song2_segment_start.wav", genre: "math_rock", song_id: "math_rock_s2", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song2_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s2", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song3_segment_start.wav", genre: "math_rock", song_id: "math_rock_s3", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song3_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s3", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song4_segment_start.wav", genre: "math_rock", song_id: "math_rock_s4", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/math_rock/math_rock_song4_segment_mid.wav", genre: "math_rock", song_id: "math_rock_s4", segment_type: "mid" },
 
     // Pop Dance (8 segments)
-    { file: "music/pop_dance/pop_dance_song1_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s1", segment_type: "start" },
-    { file: "music/pop_dance/pop_dance_song1_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s1", segment_type: "mid" },
-    { file: "music/pop_dance/pop_dance_song2_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s2", segment_type: "start" },
-    { file: "music/pop_dance/pop_dance_song2_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s2", segment_type: "mid" },
-    { file: "music/pop_dance/pop_dance_song3_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s3", segment_type: "start" },
-    { file: "music/pop_dance/pop_dance_song3_segment_mid.wav", "genre": "pop_dance", song_id: "pop_dance_s3", segment_type: "mid" },
-    { file: "music/pop_dance/pop_dance_song4_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s4", segment_type: "start" },
-    { file: "music/pop_dance/pop_dance_song4_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s4", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song1_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s1", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song1_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s1", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song2_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s2", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song2_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s2", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song3_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s3", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song3_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s3", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song4_segment_start.wav", genre: "pop_dance", song_id: "pop_dance_s4", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/pop_dance/pop_dance_song4_segment_mid.wav", genre: "pop_dance", song_id: "pop_dance_s4", segment_type: "mid" },
 
     // Jazz (8 segments)
-    { file: "music/jazz/jazz_song1_segment_start.wav", genre: "jazz", song_id: "jazz_s1", segment_type: "start" },
-    { file: "music/jazz/jazz_song1_segment_mid.wav", genre: "jazz", song_id: "jazz_s1", segment_type: "mid" },
-    { file: "music/jazz/jazz_song2_segment_start.wav", genre: "jazz", song_id: "jazz_s2", segment_type: "start" },
-    { file: "music/jazz/jazz_song2_segment_mid.wav", genre: "jazz", song_id: "jazz_s2", segment_type: "mid" },
-    { file: "music/jazz/jazz_song3_segment_start.wav", genre: "jazz", song_id: "jazz_s3", segment_type: "start" },
-    { file: "music/jazz/jazz_song3_segment_mid.wav", genre: "jazz", song_id: "jazz_s3", segment_type: "mid" },
-    { file: "music/jazz/jazz_song4_segment_start.wav", genre: "jazz", song_id: "jazz_s4", segment_type: "start" },
-    { file: "music/jazz/jazz_song4_segment_mid.wav", genre: "jazz", song_id: "jazz_s4", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song1_segment_start.wav", genre: "jazz", song_id: "jazz_s1", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song1_segment_mid.wav", genre: "jazz", song_id: "jazz_s1", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song2_segment_start.wav", genre: "jazz", song_id: "jazz_s2", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song2_segment_mid.wav", genre: "jazz", song_id: "jazz_s2", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song3_segment_start.wav", genre: "jazz", song_id: "jazz_s3", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song3_segment_mid.wav", genre: "jazz", song_id: "jazz_s3", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song4_segment_start.wav", genre: "jazz", song_id: "jazz_s4", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz/jazz_song4_segment_mid.wav", genre: "jazz", song_id: "jazz_s4", segment_type: "mid" },
 
-    // Scandipop (8 segments) - Corrected genre name
-    { file: "music/scandipop/scandipop_song1_segment_start.wav", genre: "scandipop", song_id: "scandipop_s1", segment_type: "start" },
-    { file: "music/scandipop/scandipop_song1_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s1", segment_type: "mid" },
-    { file: "music/scandipop/scandipop_song2_segment_start.wav", genre: "scandipop", song_id: "scandipop_s2", segment_type: "start" },
-    { file: "music/scandipop/scandipop_song2_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s2", segment_type: "mid" },
-    { file: "music/scandipop/scandipop_song3_segment_start.wav", genre: "scandipop", song_id: "scandipop_s3", segment_type: "start" },
-    { file: "music/scandipop/scandipop_song3_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s3", segment_type: "mid" },
-    { file: "music/scandipop/scandipop_song4_segment_start.wav", genre: "scandipop", song_id: "scandipop_s4", segment_type: "start" },
-    { file: "music/scandipop/scandipop_song4_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s4", segment_type: "mid" },
+    // Scandipop (8 segments)
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song1_segment_start.wav", genre: "scandipop", song_id: "scandipop_s1", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song1_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s1", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song2_segment_start.wav", genre: "scandipop", song_id: "scandipop_s2", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song2_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s2", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song3_segment_start.wav", genre: "scandipop", song_id: "scandipop_s3", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song3_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s3", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song4_segment_start.wav", genre: "scandipop", song_id: "scandipop_s4", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/scandipop/scandipop_song4_segment_mid.wav", genre: "scandipop", song_id: "scandipop_s4", segment_type: "mid" },
 
-    // Jazz Pop (8 segments) - New genre
-    { file: "music/jazz_pop/jazz_pop_song1_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s1", segment_type: "start" },
-    { file: "music/jazz_pop/jazz_pop_song1_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s1", segment_type: "mid" },
-    { file: "music/jazz_pop/jazz_pop_song2_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s2", segment_type: "start" },
-    { file: "music/jazz_pop/jazz_pop_song2_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s2", segment_type: "mid" },
-    { file: "music/jazz_pop/jazz_pop_song3_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s3", segment_type: "start" },
-    { file: "music/jazz_pop/jazz_pop_song3_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s3", segment_type: "mid" },
-    { file: "music/jazz_pop/jazz_pop_song4_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s4", segment_type: "start" },
-    { file: "music/jazz_pop/jazz_pop_song4_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s4", segment_type: "mid" },
+    // Jazz Pop (8 segments)
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song1_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s1", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song1_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s1", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song2_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s2", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song2_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s2", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song3_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s3", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song3_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s3", segment_type: "mid" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song4_segment_start.wav", genre: "jazz_pop", song_id: "jazz_pop_s4", segment_type: "start" },
+    { file: "https://github.com/nucleolin/MIRexp/raw/refs/heads/main/music/jazz_pop/jazz_pop_song4_segment_mid.wav", genre: "jazz_pop", song_id: "jazz_pop_s4", segment_type: "mid" },
   ];
-
 
   // Utility functions
   const generateParticipantId = () => {
@@ -130,6 +132,42 @@ const MusicExperimentApp = () => {
       [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
     return newArray;
+  };
+
+  // Preload audio files to reduce delay
+  const preloadAudio = async (stimuli) => {
+    setPreloadProgress(0);
+    const total = stimuli.length;
+    let loaded = 0;
+
+    const loadPromises = stimuli.map((stimulus, index) => {
+      return new Promise((resolve) => {
+        const audio = new Audio();
+        audio.preload = 'auto';
+        
+        const handleCanPlayThrough = () => {
+          loaded++;
+          setPreloadProgress((loaded / total) * 100);
+          preloadedAudioRef.current[stimulus.file] = audio;
+          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+          resolve();
+        };
+
+        const handleError = () => {
+          console.warn(`Failed to preload: ${stimulus.file}`);
+          loaded++;
+          setPreloadProgress((loaded / total) * 100);
+          resolve();
+        };
+
+        audio.addEventListener('canplaythrough', handleCanPlayThrough);
+        audio.addEventListener('error', handleError);
+        audio.src = stimulus.file;
+        audio.load();
+      });
+    });
+
+    await Promise.all(loadPromises);
   };
 
   // Refined music selection logic
@@ -151,12 +189,12 @@ const MusicExperimentApp = () => {
     // 2. Select exactly one 'start' and one 'mid' segment for each genre
     allGenres.forEach(genre => {
       if (genrePools[genre].start.length > 0) {
-        selected.push(genrePools[genre].start.pop());
+        selected.push(genrePools[genre].start[0]);
       } else {
         console.warn(`Warning: No 'start' segments found for genre: ${genre}`);
       }
       if (genrePools[genre].mid.length > 0) {
-        selected.push(genrePools[genre].mid.pop());
+        selected.push(genrePools[genre].mid[0]);
       } else {
         console.warn(`Warning: No 'mid' segments found for genre: ${genre}`);
       }
@@ -181,7 +219,7 @@ const MusicExperimentApp = () => {
     });
   };
 
-  const startExperiment = () => {
+  const startExperiment = async () => {
     // Validate form
     const requiredFields = ['age', 'gender', 'musicalBackground', 'theory', 'listenFrequency', 'liveFrequency', 'listeningEnvironment'];
     const isValid = requiredFields.every(field => formData[field]);
@@ -203,7 +241,7 @@ const MusicExperimentApp = () => {
     if (selected.length !== totalStimuliExpected) {
       console.error(`Expected ${totalStimuliExpected} stimuli, but got ${selected.length}. Check music selection logic.`);
       alert(`載入音樂檔案數量不符預期，請重新整理頁面，若仍有問題，請聯繫研究者。`);
-      setCurrentScreen('intro'); // Go back to intro if selection fails
+      setCurrentScreen('intro');
       return;
     }
     setSelectedStimuli(selected);
@@ -212,24 +250,24 @@ const MusicExperimentApp = () => {
     setPlayCountsPerStimulus(new Array(totalStimuliExpected).fill(0));
 
     // Set initial experiment results structure
-    setExperimentResults(prevResults => ({
-      ...prevResults,
+    setExperimentResults({
       participantId,
       demographicInfo: {
         ...formData,
         experimentStartTime: experimentStartTimeRef.current.toISOString()
       },
-      stimuli: [] // Ensure this is an empty array at the start
-    }));
+      stimuli: []
+    });
 
-    // Simulate loading time
-    setTimeout(() => {
-      setCurrentScreen('experiment');
-      currentStimulusStartTimeRef.current = new Date(); // Start timer for first stimulus
-    }, 1500);
+    // Preload audio files
+    await preloadAudio(selected);
+
+    // Start experiment
+    setCurrentScreen('experiment');
+    currentStimulusStartTimeRef.current = new Date();
   };
 
-  // Define event handler functions using useCallback to ensure stable references
+  // Audio event handlers
   const handleAudioEnded = useCallback(() => {
     if (playIntervalRef.current) {
       clearInterval(playIntervalRef.current);
@@ -237,94 +275,89 @@ const MusicExperimentApp = () => {
     }
     setIsPlaying(false);
     setHasPlayedStimulus(true);
-    setPlayProgress(100); // Ensure progress is 100% on end
+    setPlayProgress(100);
   }, []);
 
   const handleAudioError = useCallback((e) => {
     console.error('Audio file load/decode error:', e);
-    // Removed alert as per user request (still plays, but error is logged)
     setIsPlaying(false);
+    setIsLoading(false);
     if (playIntervalRef.current) {
       clearInterval(playIntervalRef.current);
       playIntervalRef.current = null;
     }
-    setPlayProgress(0); // Reset progress on error
+    setPlayProgress(0);
   }, []);
 
-  // Use useEffect to manage the single Audio object and its persistent listeners
+  // Initialize audio element
   useEffect(() => {
-    // Initialize Audio object once on mount
     if (!audioRef.current) {
       audioRef.current = new Audio();
-      // Attach event listeners to the single audio object
       audioRef.current.addEventListener('ended', handleAudioEnded);
       audioRef.current.addEventListener('error', handleAudioError);
-      // You can add 'loadedmetadata' if you need it for other purposes, but not strictly required for this logic
-      // audioRef.current.addEventListener('loadedmetadata', () => console.log('Metadata loaded'));
     }
 
-    // Cleanup function for when component unmounts
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = ''; // Clear source to release resources
-        // Remove event listeners
+        audioRef.current.src = '';
         audioRef.current.removeEventListener('ended', handleAudioEnded);
         audioRef.current.removeEventListener('error', handleAudioError);
-        audioRef.current = null; // Important: nullify the ref to allow garbage collection
+        audioRef.current = null;
       }
       if (playIntervalRef.current) {
         clearInterval(playIntervalRef.current);
         playIntervalRef.current = null;
       }
     };
-  }, [handleAudioEnded, handleAudioError]); // Dependencies to ensure listeners are stable
+  }, [handleAudioEnded, handleAudioError]);
 
   const playCurrentStimulus = () => {
-    if (!selectedStimuli[currentStimulusIndex] || !audioRef.current) return; // Ensure audio element exists
+    if (!selectedStimuli[currentStimulusIndex] || !audioRef.current) return;
 
     const stimulus = selectedStimuli[currentStimulusIndex];
 
-    // Update play count for the current stimulus
+    // Update play count
     const newPlayCounts = [...playCountsPerStimulus];
     newPlayCounts[currentStimulusIndex]++;
     setPlayCountsPerStimulus(newPlayCounts);
 
+    setIsLoading(true);
     setIsPlaying(true);
-    setPlayProgress(0); // Reset progress for new play
+    setPlayProgress(0);
 
-    // Set source and load on the existing audio object
-    audioRef.current.src = stimulus.file;
-    audioRef.current.load(); // Request to load the new source
+    // Use preloaded audio if available
+    const preloadedAudio = preloadedAudioRef.current[stimulus.file];
+    if (preloadedAudio && preloadedAudio.readyState >= 3) {
+      audioRef.current.src = preloadedAudio.src;
+      setIsLoading(false);
+    } else {
+      audioRef.current.src = stimulus.file;
+      audioRef.current.load();
+    }
 
-    // Play the audio
-    audioRef.current.play().catch(err => {
-      console.error('Initial Play Error (user interaction required?):', err);
-      // This alert is typically for browser auto-play blocking, not a file loading error
+    audioRef.current.play().then(() => {
+      setIsLoading(false);
+    }).catch(err => {
+      console.error('Play Error:', err);
       alert('播放音樂失敗。請確保瀏覽器允許自動播放，或嘗試重新點擊播放按鈕。');
       setIsPlaying(false);
-      setPlayProgress(0); // Reset progress if play fails
-      if (playIntervalRef.current) {
-        clearInterval(playIntervalRef.current);
-        playIntervalRef.current = null;
-      }
+      setIsLoading(false);
+      setPlayProgress(0);
     });
 
-    // Start progress interval
+    // Progress tracking
     const startTime = Date.now();
     if (playIntervalRef.current) {
       clearInterval(playIntervalRef.current);
     }
     playIntervalRef.current = setInterval(() => {
-      // Check if audioRef.current is valid before accessing its properties
       const currentAudio = audioRef.current;
       if (currentAudio) {
         const elapsed = (Date.now() - startTime) / 1000;
-        const duration = currentAudio.duration || 0; // Use currentAudio.duration, default to 0
+        const duration = currentAudio.duration || 0;
         const progress = duration > 0 ? (elapsed / duration) * 100 : 0;
 
-        // The 'ended' event handler will handle clearing interval and state,
-        // but this manual check also helps in case of very short audio or edge cases.
         if (currentAudio.ended || progress >= 100) {
           if (playIntervalRef.current) {
             clearInterval(playIntervalRef.current);
@@ -336,25 +369,15 @@ const MusicExperimentApp = () => {
         } else {
           setPlayProgress(progress);
         }
-      } else {
-        // If audioRef.current somehow becomes null during interval, stop it
-        if (playIntervalRef.current) {
-          clearInterval(playIntervalRef.current);
-          playIntervalRef.current = null;
-        }
-        setIsPlaying(false);
       }
     }, 100);
   };
 
   const nextStimulus = () => {
-    // Only enforce playing the entire stimulus for the first play.
-    // For subsequent plays, the user can advance even if the audio is still playing.
-    if (playCountsPerStimulus[currentStimulusIndex] === 0) {
-      if (!hasPlayedStimulus) {
-        alert('請先聆聽音樂片段再回答問題。');
-        return;
-      }
+    // Validate play requirement
+    if (playCountsPerStimulus[currentStimulusIndex] === 0 && !hasPlayedStimulus) {
+      alert('請先聆聽音樂片段再回答問題。');
+      return;
     }
 
     // Validate responses
@@ -364,10 +387,10 @@ const MusicExperimentApp = () => {
       return;
     }
 
-    // Stop current audio if playing or loaded
+    // Stop current audio
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.src = ''; // Clear source to prevent loading issues for next track
+      audioRef.current.src = '';
     }
 
     // Clear play interval
@@ -376,16 +399,17 @@ const MusicExperimentApp = () => {
       playIntervalRef.current = null;
     }
 
-    // Record results for the current stimulus
+    // Record results for current stimulus
     const questionEndTime = new Date();
     const currentStimulusData = selectedStimuli[currentStimulusIndex];
     const questionDurationMs = questionEndTime - currentStimulusStartTimeRef.current;
 
     const stimulusResponse = {
+      stimulusIndex: currentStimulusIndex + 1, // Add stimulus index for debugging
       genre: currentStimulusData.genre,
       song_id: currentStimulusData.song_id,
       segment_type: currentStimulusData.segment_type,
-      likeRating: parseInt(responses.likeRating), // Ensure numeric type
+      likeRating: parseInt(responses.likeRating),
       complexRating: parseInt(responses.complexRating),
       familiarRating: parseInt(responses.familiarRating),
       structureRating: responses.structureRating,
@@ -399,23 +423,32 @@ const MusicExperimentApp = () => {
       questionDurationMs: questionDurationMs
     };
 
-    setExperimentResults(prevResults => ({
-      ...prevResults,
-      stimuli: [...prevResults.stimuli, stimulusResponse]
-    }));
+    // Update experiment results
+    setExperimentResults(prevResults => {
+      const updatedResults = {
+        ...prevResults,
+        stimuli: [...prevResults.stimuli, stimulusResponse]
+      };
+      
+      // Check if this is the last stimulus
+      if (currentStimulusIndex + 1 >= totalStimuliExpected) {
+        // Complete experiment with updated results
+        completeExperimentWithResults(updatedResults);
+      }
+      
+      return updatedResults;
+    });
 
-    // Reset for next stimulus or complete experiment
-    if (currentStimulusIndex + 1 >= totalStimuliExpected) {
-      completeExperiment();
-    } else {
+    // Move to next stimulus or complete
+    if (currentStimulusIndex + 1 < totalStimuliExpected) {
       setCurrentStimulusIndex(currentStimulusIndex + 1);
-      setHasPlayedStimulus(false); // Reset for next stimulus
+      setHasPlayedStimulus(false);
       setPlayProgress(0);
-      currentStimulusStartTimeRef.current = new Date(); // Start timer for next stimulus
+      currentStimulusStartTimeRef.current = new Date();
 
       // Reset responses
       setResponses({
-        likeRating: 5,
+        likeRating: 4,
         complexRating: 4,
         familiarRating: 4,
         structureRating: '',
@@ -427,9 +460,86 @@ const MusicExperimentApp = () => {
     }
   };
 
-  // --- NEW FUNCTION TO SUBMIT DATA TO LOCAL NODE.JS SERVER ---
+  // Google Form configuration
+  const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSctUuvb1W0yWW8pUoFJ917v-eTWk_RCyWYx7w1TPhXUgq9JMA/formResponse';
+  const GOOGLE_FORM_FIELD_IDS = {
+    participantId: 'entry.2079124097',
+    age: 'entry.1384813390',
+    gender: 'entry.1976005518',
+    musicalBackground: 'entry.1456370923',
+    theory: 'entry.1499473583',
+    listenFrequency: 'entry.1347606183',
+    liveFrequency: 'entry.150689753',
+    listeningEnvironment: 'entry.1276443968',
+    experimentDuration: 'entry.1956115892',
+    totalPlays: 'entry.2136283044',
+    avgPlaysPerStimulus: 'entry.1299717200',
+    stimulus1: 'entry.1284424283',
+    stimulus2: 'entry.702331979',
+    stimulus3: 'entry.547457976',
+    stimulus4: 'entry.1788793290',
+    stimulus5: 'entry.1194166235',
+    stimulus6: 'entry.1777131518',
+    stimulus7: 'entry.319567093',
+    stimulus8: 'entry.858181290',
+    stimulus9: 'entry.452409364',
+    stimulus10: 'entry.1461352272',
+    stimulus11: 'entry.1523437309',
+    stimulus12: 'entry.387011442',
+  };
+
+  // Submit to Google Form
+  const submitToGoogleForm = (results) => {
+    const params = new URLSearchParams();
+
+    // Participant & demographics
+    params.append(GOOGLE_FORM_FIELD_IDS.participantId, results.participantId);
+    params.append(GOOGLE_FORM_FIELD_IDS.age, results.demographicInfo.age);
+    params.append(GOOGLE_FORM_FIELD_IDS.gender, results.demographicInfo.gender);
+    params.append(GOOGLE_FORM_FIELD_IDS.musicalBackground, results.demographicInfo.musicalBackground);
+    params.append(GOOGLE_FORM_FIELD_IDS.theory, results.demographicInfo.theory);
+    params.append(GOOGLE_FORM_FIELD_IDS.listenFrequency, results.demographicInfo.listenFrequency);
+    params.append(GOOGLE_FORM_FIELD_IDS.liveFrequency, results.demographicInfo.liveFrequency);
+    params.append(GOOGLE_FORM_FIELD_IDS.listeningEnvironment, results.demographicInfo.listeningEnvironment);
+
+    // Summary fields
+    if (results.experimentSummary) {
+      params.append(GOOGLE_FORM_FIELD_IDS.experimentDuration, 
+        results.experimentSummary.totalExperimentDurationMin || '0');
+      params.append(GOOGLE_FORM_FIELD_IDS.totalPlays, 
+        String(results.experimentSummary.playStatistics?.totalPlays || 0));
+      params.append(GOOGLE_FORM_FIELD_IDS.avgPlaysPerStimulus, 
+        String(results.experimentSummary.playStatistics?.averagePlaysPerStimulus || 0));
+      params.append('pageHistory', '0');
+
+    }
+
+    // Each stimulus response
+    results.stimuli.forEach((stim, idx) => {
+      const fieldId = GOOGLE_FORM_FIELD_IDS[`stimulus${idx + 1}`];
+      if (fieldId) {
+        // Create a compact representation for Google Form
+        const stimulusData = `Genre: ${stim.genre}, Segment: ${stim.segment_type}, Like: ${stim.likeRating}, Complex: ${stim.complexRating}, Familiar: ${stim.familiarRating}, Structure: ${stim.structureRating}, Emotion: ${stim.emotionRating}, Engagement: ${stim.engagementRating}, Component: ${stim.selectedComponent}, GenreGuess: ${stim.genreSelection}, Plays: ${stim.totalPlayCount}`;
+        params.append(fieldId, stimulusData);
+      }
+    });
+
+    // Submit with no-cors mode
+    fetch(GOOGLE_FORM_ACTION_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    }).then(() => {
+      console.log('Google Form submission completed');
+    }).catch(err => {
+      console.warn('Google Form submission error:', err);
+    });
+  };
+
+  // Submit to local server
   const submitDataToLocalServer = async (data) => {
-    const serverBaseUrl = 'http://localhost:3001'; // Ensure this matches your server.js PORT
+    const serverBaseUrl = 'http://localhost:3001';
     const endpoint = `${serverBaseUrl}/api/submit-results`;
 
     try {
@@ -442,26 +552,26 @@ const MusicExperimentApp = () => {
       });
 
       if (response.ok) {
-        console.log('Results successfully submitted to local Node.js server.');
+        console.log('Results successfully submitted to local server.');
       } else {
         const errorText = await response.text();
-        console.error(`Failed to submit results to local Node.js server: ${response.status} - ${errorText}`);
+        console.error(`Failed to submit to local server: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.error('Error connecting to local Node.js server:', error);
+      console.error('Error connecting to local server:', error);
     }
   };
 
+  // Submit to Formspree
   const submitDataToFormspree = async (data) => {
-    // Prepare data for Formspree: flatten complex objects into stringified JSON
     const formDataForSubmission = {
       participantId: data.participantId,
-      // Stringify demographic info and experiment summary
       demographicInfo: JSON.stringify(data.demographicInfo),
       experimentSummary: JSON.stringify(data.experimentSummary),
+      totalStimuli: data.stimuli.length // Add count for verification
     };
 
-    // Add each stimulus response as a separate field
+    // Add each stimulus response
     data.stimuli.forEach((stimulus, index) => {
       formDataForSubmission[`stimulus_${index + 1}`] = JSON.stringify(stimulus);
     });
@@ -473,7 +583,7 @@ const MusicExperimentApp = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(formDataForSubmission) // Send the flattened, stringified data
+        body: JSON.stringify(formDataForSubmission)
       });
 
       if (response.ok) {
@@ -482,51 +592,59 @@ const MusicExperimentApp = () => {
         console.error('Formspree submission failed:', response.statusText);
       }
     } catch (error) {
-      console.error('Error submitting data to Formspree:', error);
+      console.error('Error submitting to Formspree:', error);
     }
   };
 
-
-  const completeExperiment = () => {
+  // Complete experiment with results
+  const completeExperimentWithResults = (results) => {
     const experimentEndTime = new Date();
     const totalDurationMs = experimentEndTime - experimentStartTimeRef.current;
 
-    // Calculate final statistics
-    const totalPlays = experimentResults.stimuli.reduce((sum, s) => sum + s.totalPlayCount, 0);
-    const averagePlaysPerStimulus = (totalPlays / totalStimuliExpected).toFixed(2);
+    // Calculate statistics
+    const totalPlays = results.stimuli.reduce((sum, s) => sum + s.totalPlayCount, 0);
+    const averagePlaysPerStimulus = totalPlays / results.stimuli.length;
 
-    const allQuestionDurations = experimentResults.stimuli.map(s => s.questionDurationMs);
+    const allQuestionDurations = results.stimuli.map(s => s.questionDurationMs);
     const totalQuestionDurationMs = allQuestionDurations.reduce((sum, duration) => sum + duration, 0);
-    const averageQuestionTimeMs = (totalQuestionDurationMs / totalStimuliExpected).toFixed(0);
-    const averageQuestionTimeSec = (averageQuestionTimeMs / 1000).toFixed(2);
+    const averageQuestionTimeMs = totalQuestionDurationMs / results.stimuli.length;
 
-    const maxPlaysForAnyStimulus = Math.max(...experimentResults.stimuli.map(s => s.totalPlayCount));
-    const minPlaysForAnyStimulus = Math.min(...experimentResults.stimuli.map(s => s.totalPlayCount));
+    const maxPlaysForAnyStimulus = Math.max(...results.stimuli.map(s => s.totalPlayCount));
+    const minPlaysForAnyStimulus = Math.min(...results.stimuli.map(s => s.totalPlayCount));
 
     const finalResults = {
-      ...experimentResults,
+      ...results,
       experimentSummary: {
         experimentStartTime: experimentStartTimeRef.current.toISOString(),
         experimentEndTime: experimentEndTime.toISOString(),
         totalExperimentDurationMs: totalDurationMs,
         totalExperimentDurationMin: (totalDurationMs / 60000).toFixed(2),
+        totalStimuliCompleted: results.stimuli.length,
         playStatistics: {
           totalPlays,
-          averagePlaysPerStimulus,
+          averagePlaysPerStimulus: averagePlaysPerStimulus.toFixed(2),
           maxPlaysForAnyStimulus,
           minPlaysForAnyStimulus
         },
-        averageQuestionTimeMs,
-        averageQuestionTimeSec
+        averageQuestionTimeMs: averageQuestionTimeMs.toFixed(0),
+        averageQuestionTimeSec: (averageQuestionTimeMs / 1000).toFixed(2)
       }
     };
 
+    // Update state and submit
     setExperimentResults(finalResults);
     setCurrentScreen('completion');
 
-    // Submit data to server
-    submitDataToFormspree(finalResults); // Always attempts to send to Formspree
-    submitDataToLocalServer(finalResults); // Attempts to send to your Node.js server
+    // Submit to all endpoints
+    submitToGoogleForm(finalResults);
+    submitDataToFormspree(finalResults);
+    submitDataToLocalServer(finalResults);
+  };
+
+  const completeExperiment = () => {
+    // This function is now replaced by completeExperimentWithResults
+    // to ensure we use the most up-to-date results
+    completeExperimentWithResults(experimentResults);
   };
 
   const downloadResults = () => {
@@ -536,17 +654,17 @@ const MusicExperimentApp = () => {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = `music_experiment_${experimentResults.participantId}_${new Date().toISOString().replace(/:/g, '-')}.json`; // Sanitize filename
+    a.download = `music_experiment_${experimentResults.participantId}_${new Date().toISOString().replace(/:/g, '-')}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  // Render functions for different screens
+  // Render functions
   const renderIntroScreen = () => (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">term-project for NTHU 2025 Spring MIR(by Su Li)</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Term Project for NTHU 2025 Spring MIR (by Su Li)</h1>
       <hr className="my-6" />
       <div className="bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-semibold mb-4 text-center">歡迎參與本次音樂感知實驗！</h2>
@@ -674,11 +792,11 @@ const MusicExperimentApp = () => {
               required
             >
               <option value="">請選擇</option>
-              <option value="laptop-headphones-indoor">電腦/筆電/平板：室內-耳機 </option>
+              <option value="laptop-headphones-indoor">電腦/筆電/平板：室內-耳機</option>
               <option value="laptop-headphones-outdoor">電腦/筆電/平板：室外-耳機</option>
               <option value="laptop-speakers">電腦/筆電/平板：直接播放</option>
-              <option value="moblie-headphones-indoor">手機：室內-耳機 </option>
-              <option value="moblie-headphones-outdoor">手機：室外-耳機</option>
+              <option value="mobile-headphones-indoor">手機：室內-耳機</option>
+              <option value="mobile-headphones-outdoor">手機：室外-耳機</option>
               <option value="mobile-speakers">手機：直接播放</option>
               <option value="other">其他</option>
             </select>
@@ -710,23 +828,28 @@ const MusicExperimentApp = () => {
   const renderLoadingScreen = () => (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p className="mt-4 text-lg text-gray-700">正在載入音樂檔案，請稍候...</p>
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+        <p className="text-lg text-gray-700 mb-2">正在載入音樂檔案，請稍候...</p>
+        {preloadProgress > 0 && (
+          <div className="w-64 mx-auto">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${preloadProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">{Math.round(preloadProgress)}%</p>
+          </div>
+        )}
       </div>
     </div>
   );
 
   const renderExperimentScreen = () => {
-    // --- Circular Progress Bar Calculation ---
-    // Define the radius and stroke width for the circle
-    const radius = 50; // Radius of the circle
-    const strokeWidth = 8; // Width of the progress line
-    const circumference = 2 * Math.PI * radius; // Circumference of the circle
-
-    // Calculate the dash offset for the progress circle
-    // As progress goes from 0 to 100, dash offset goes from circumference to 0
+    const radius = 50;
+    const strokeWidth = 8;
+    const circumference = 2 * Math.PI * radius;
     const dashOffset = circumference - (playProgress / 100) * circumference;
-    // --- End Circular Progress Bar Calculation ---
 
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -748,14 +871,14 @@ const MusicExperimentApp = () => {
           <div className="mb-8 flex flex-col items-center">
             <button
               onClick={playCurrentStimulus}
-              disabled={isPlaying}
+              disabled={isPlaying || isLoading}
               className={`px-8 py-4 rounded-full font-bold text-lg transition-colors duration-200 ease-in-out transform hover:scale-105 ${
-                isPlaying
+                isPlaying || isLoading
                   ? 'bg-gray-400 cursor-not-allowed text-gray-700'
                   : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg'
               }`}
             >
-              {isPlaying ? '播放中...' : '播放音樂'}
+              {isLoading ? '載入中...' : isPlaying ? '播放中...' : '播放音樂'}
             </button>
 
             {playCountsPerStimulus[currentStimulusIndex] > 0 && (
@@ -763,13 +886,13 @@ const MusicExperimentApp = () => {
                 播放次數: {playCountsPerStimulus[currentStimulusIndex]}
               </span>
             )}
-            <p className="mt-4 text-center text-gray-600 text-sm leading-relaxed">完整聽完後，若想再聆聽，可再次點擊「播放音樂」按鈕。</p>
+            <p className="mt-4 text-center text-gray-600 text-sm leading-relaxed">
+              完整聽完後，若想再聆聽，可再次點擊「播放音樂」按鈕。
+            </p>
 
-
-            {/* --- Audio visualization progress bar (CIRCULAR) --- */}
-            <div className="mt-8 relative w-40 h-40 flex items-center justify-center"> {/* Container for the circle */}
+            {/* Circular progress bar */}
+            <div className="mt-8 relative w-40 h-40 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90">
-                {/* Background circle */}
                 <circle
                   className="text-gray-200"
                   strokeWidth={strokeWidth}
@@ -779,13 +902,12 @@ const MusicExperimentApp = () => {
                   cx="80"
                   cy="80"
                 />
-                {/* Progress circle */}
                 <circle
                   className="text-blue-500 transition-all duration-100 ease-linear"
                   strokeWidth={strokeWidth}
                   strokeDasharray={circumference}
                   strokeDashoffset={dashOffset}
-                  strokeLinecap="round" // Makes the end of the stroke rounded
+                  strokeLinecap="round"
                   stroke="currentColor"
                   fill="transparent"
                   r={radius}
@@ -797,10 +919,9 @@ const MusicExperimentApp = () => {
                 {isPlaying ? `${playProgress.toFixed(0)}%` : '0%'}
               </div>
             </div>
-            {/* --- End Audio visualization progress bar (CIRCULAR) --- */}
 
-            {/* Questions (only visible after music has played at least once) */}
-            <div className={`space-y-8 mt-8 ${hasPlayedStimulus ? 'block' : 'hidden'}`}>
+            {/* Questions */}
+            <div className={`space-y-8 mt-8 w-full ${hasPlayedStimulus ? 'block' : 'hidden'}`}>
               <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-blue-500">
                 <h3 className="text-lg font-semibold mb-4">請問您有多喜歡這段音樂？</h3>
                 <p className="mb-4 text-gray-700">請拖動滑桿來評估您對這段音樂的喜好程度。</p>
@@ -850,7 +971,7 @@ const MusicExperimentApp = () => {
                 />
                 <div className="flex justify-between text-sm text-gray-600 mt-2">
                   <span>1 (非常不熟悉/從未聽過)</span>
-                  <span>4 (好像有聽過//不太確定)</span>
+                  <span>4 (好像有聽過/不太確定)</span>
                   <span>7 (非常熟悉/經常聆聽)</span>
                 </div>
               </div>
@@ -874,7 +995,7 @@ const MusicExperimentApp = () => {
                         checked={responses.structureRating === option.value}
                         onChange={(e) => handleResponseChange('structureRating', e.target.value)}
                         className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                        required // Make sure this is required
+                        required
                       />
                       <span>{option.label}</span>
                     </label>
@@ -901,7 +1022,7 @@ const MusicExperimentApp = () => {
                         checked={responses.emotionRating === option.value}
                         onChange={(e) => handleResponseChange('emotionRating', e.target.value)}
                         className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                        required // Make sure this is required
+                        required
                       />
                       <span>{option.label}</span>
                     </label>
@@ -946,7 +1067,7 @@ const MusicExperimentApp = () => {
                         checked={responses.selectedComponent === option.value}
                         onChange={(e) => handleResponseChange('selectedComponent', e.target.value)}
                         className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                        required // Make sure this is required
+                        required
                       />
                       <span>{option.label}</span>
                     </label>
@@ -961,17 +1082,18 @@ const MusicExperimentApp = () => {
                   value={responses.genreSelection}
                   onChange={(e) => handleResponseChange('genreSelection', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required // Make sure this is required  
+                  required
                 >
                   <option value="">請選擇曲風</option>
                   <option value="classical">古典音樂 (Classical)</option>
                   <option value="folk">民謠 (Folk)</option>
                   <option value="citypop">城市流行 (City Pop)</option>
-                  <option value="pop_dance">流行/舞曲 (Pop/Dance)</option>
-                  <option value="pop">流行 (Pop)</option>
+                  <option value="pop_dance">流行舞曲 (Pop Dance)</option>
+                  <option value="jazz_pop">爵士流行 (Jazz Pop)</option>
                   <option value="techno">科技舞曲 (Techno)</option>
                   <option value="math_rock">數字搖滾 (Math Rock)</option>
                   <option value="jazz">爵士樂 (Jazz)</option>
+                  <option value="scandipop">斯堪地流行 (Scandipop)</option>
                   <option value="tropical_house">熱帶浩室 (Tropical House)</option>
                   <option value="other">其他</option>
                   <option value="not_sure">無法辨識</option>
@@ -981,14 +1103,14 @@ const MusicExperimentApp = () => {
               <button
                 onClick={nextStimulus}
                 disabled={
-                  (playCountsPerStimulus[currentStimulusIndex] === 0 && !hasPlayedStimulus) || // 第一次播放必須播放完
+                  (playCountsPerStimulus[currentStimulusIndex] === 0 && !hasPlayedStimulus) ||
                   !responses.structureRating ||
                   !responses.emotionRating ||
                   !responses.selectedComponent ||
                   !responses.genreSelection
                 }
                 className={`w-full py-3 px-6 rounded-md font-medium transition-colors duration-200 ease-in-out ${
-                  ((playCountsPerStimulus[currentStimulusIndex] > 0 || hasPlayedStimulus) && // 只要播放過一次，或不是第一次播放
+                  ((playCountsPerStimulus[currentStimulusIndex] > 0 || hasPlayedStimulus) &&
                    responses.structureRating &&
                    responses.emotionRating &&
                    responses.selectedComponent &&
@@ -997,7 +1119,7 @@ const MusicExperimentApp = () => {
                     : 'bg-gray-300 cursor-not-allowed text-gray-500'
                 }`}
               >
-                下一題
+                {currentStimulusIndex + 1 < totalStimuliExpected ? '下一題' : '完成實驗'}
               </button>
             </div>
           </div>
@@ -1012,11 +1134,14 @@ const MusicExperimentApp = () => {
         <h2 className="text-2xl font-bold mb-4">感謝您的參與！</h2>
         <p className="text-lg mb-6">您的回應已被記錄。</p>
 
-        {experimentResults.experimentSummary.totalExperimentDurationMin && (
+        {experimentResults.experimentSummary && (
           <div className="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
             <h3 className="text-xl font-semibold mb-4 text-blue-800">實驗摘要</h3>
             <p className="mb-2 text-gray-700">
               總實驗時間: <span className="font-medium">{experimentResults.experimentSummary.totalExperimentDurationMin} 分鐘</span>
+            </p>
+            <p className="mb-2 text-gray-700">
+              完成刺激數量: <span className="font-medium">{experimentResults.experimentSummary.totalStimuliCompleted} / {totalStimuliExpected}</span>
             </p>
             <p className="mb-2 text-gray-700">
               總播放次數: <span className="font-medium">{experimentResults.experimentSummary.playStatistics.totalPlays}</span>
