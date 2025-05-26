@@ -168,39 +168,50 @@ const MusicExperimentApp = () => {
     await Promise.all(loadPromises);
   };
 
-  // Refined music selection logic
-  const selectMusic = () => {
+    // Refined music selection logic
+    const selectMusicWithDiversity = () => {
     const selected = [];
-    const genrePools = {};
-
-    // 1. Organize music files by genre and segment type
+    
     allGenres.forEach(genre => {
-      genrePools[genre] = {
-        start: musicFiles.filter(m => m.genre === genre && m.segment_type === "start"),
-        mid: musicFiles.filter(m => m.genre === genre && m.segment_type === "mid")
-      };
-      // Shuffle segments within each pool
-      genrePools[genre].start = shuffleArray(genrePools[genre].start);
-      genrePools[genre].mid = shuffleArray(genrePools[genre].mid);
+        // 獲取該曲風的所有歌曲
+        const genreSongs = [...new Set(
+        musicFiles
+            .filter(m => m.genre === genre)
+            .map(m => m.song_id)
+        )];
+        
+        // 如果有足夠的歌曲，選擇兩首不同的
+        if (genreSongs.length >= 2) {
+        const shuffled = shuffleArray(genreSongs);
+        const song1 = shuffled[0];
+        const song2 = shuffled[1];
+        
+        // 為第一首歌選擇 start，第二首歌選擇 mid
+        const startSegment = musicFiles.find(
+            m => m.genre === genre && 
+                m.song_id === song1 && 
+                m.segment_type === "start"
+        );
+        const midSegment = musicFiles.find(
+            m => m.genre === genre && 
+                m.song_id === song2 && 
+                m.segment_type === "mid"
+        );
+        
+        if (startSegment) selected.push(startSegment);
+        if (midSegment) selected.push(midSegment);
+        } else {
+        // 如果只有一首歌，就用原本的邏輯
+        const song = genreSongs[0];
+        const segments = musicFiles.filter(
+            m => m.genre === genre && m.song_id === song
+        );
+        selected.push(...segments);
+        }
     });
-
-    // 2. Select exactly one 'start' and one 'mid' segment for each genre
-    allGenres.forEach(genre => {
-      if (genrePools[genre].start.length > 0) {
-        selected.push(genrePools[genre].start[0]);
-      } else {
-        console.warn(`Warning: No 'start' segments found for genre: ${genre}`);
-      }
-      if (genrePools[genre].mid.length > 0) {
-        selected.push(genrePools[genre].mid[0]);
-      } else {
-        console.warn(`Warning: No 'mid' segments found for genre: ${genre}`);
-      }
-    });
-
-    // 3. Shuffle the entire selection to randomize the order of presentation
+    
     return shuffleArray(selected);
-  };
+    };
 
   // Event handlers
   const handleFormChange = (e) => {
