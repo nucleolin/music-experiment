@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/music-experiment/static/css/main.adae3e97.css",
-    "main.js": "/music-experiment/static/js/main.65601fba.js",
+    "main.js": "/music-experiment/static/js/main.acbfe287.js",
     "index.html": "/music-experiment/index.html",
     "main.adae3e97.css.map": "/music-experiment/static/css/main.adae3e97.css.map",
-    "main.65601fba.js.map": "/music-experiment/static/js/main.65601fba.js.map"
+    "main.acbfe287.js.map": "/music-experiment/static/js/main.acbfe287.js.map"
   },
   "entrypoints": [
     "static/css/main.adae3e97.css",
-    "static/js/main.65601fba.js"
+    "static/js/main.acbfe287.js"
   ]
 }
