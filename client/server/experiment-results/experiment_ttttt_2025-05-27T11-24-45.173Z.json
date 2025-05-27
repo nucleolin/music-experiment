@@ -1,0 +1,50 @@
+{
+  "participantId": "ttttt",
+  "demographicInfo": {
+    "age": "18-21",
+    "gender": "others",
+    "musicalBackground": "beginner",
+    "theory": "none",
+    "listenFrequency": "sometimes",
+    "liveFrequency": "never",
+    "listeningEnvironment": "laptop-headphones-indoor",
+    "participantId": "ttttt",
+    "experimentStartTime": "2025-05-27T11:23:44.848Z"
+  },
+  "stimuli": [
+    {
+      "stimulusIndex": 1,
+      "genre": "classical",
+      "song_id": "classical_s3",
+      "segment_type": "start",
+      "likeRating": 6,
+      "complexRating": 1,
+      "familiarRating": 2,
+      "structureRating": "2",
+      "emotionRating": "5",
+      "engagementRating": 4,
+      "selectedComponent": "rhythm",
+      "genreSelection": "techno",
+      "curiosityRating": 5,
+      "totalPlayCount": 2,
+      "questionStartTime": "2025-05-27T11:23:44.892Z",
+      "questionEndTime": "2025-05-27T11:24:45.126Z",
+      "questionDurationMs": 60234
+    }
+  ],
+  "experimentSummary": {
+    "experimentStartTime": "2025-05-27T11:23:44.848Z",
+    "experimentEndTime": "2025-05-27T11:24:45.126Z",
+    "totalExperimentDurationMs": 60278,
+    "totalExperimentDurationMin": "1.00",
+    "totalStimuliCompleted": 1,
+    "playStatistics": {
+      "totalPlays": 2,
+      "averagePlaysPerStimulus": "2.00",
+      "maxPlaysForAnyStimulus": 2,
+      "minPlaysForAnyStimulus": 2
+    },
+    "averageQuestionTimeMs": "60234",
+    "averageQuestionTimeSec": "60.23"
+  }
+}

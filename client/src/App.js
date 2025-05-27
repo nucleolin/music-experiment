@@ -961,7 +961,7 @@ const MusicExperimentApp = () => {
   // Render screens
   const renderIntroScreen = () => (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Term Project for NTHU 2025 Spring MIR (by Su Li)</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Term Project for NTHU 2025 Spring MIR (by Su Li // v22)</h1>
       <hr className="my-6" />
       <div className="bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-semibold mb-4 text-center">歡迎參與本次音樂感知實驗！</h2>

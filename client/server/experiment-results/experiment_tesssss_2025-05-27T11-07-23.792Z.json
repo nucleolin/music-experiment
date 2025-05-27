@@ -1,0 +1,50 @@
+{
+  "participantId": "tesssss",
+  "demographicInfo": {
+    "age": "18-21",
+    "gender": "female",
+    "musicalBackground": "beginner",
+    "theory": "none",
+    "listenFrequency": "mostthetime",
+    "liveFrequency": "never",
+    "listeningEnvironment": "laptop-headphones-indoor",
+    "participantId": "tesssss",
+    "experimentStartTime": "2025-05-27T11:07:09.438Z"
+  },
+  "stimuli": [
+    {
+      "stimulusIndex": 1,
+      "genre": "classical",
+      "song_id": "classical_s1",
+      "segment_type": "mid",
+      "likeRating": 4,
+      "complexRating": 4,
+      "familiarRating": 4,
+      "structureRating": "1",
+      "emotionRating": "1",
+      "engagementRating": 4,
+      "selectedComponent": "rhythm",
+      "genreSelection": "pop_dance",
+      "curiosityRating": 2,
+      "totalPlayCount": 1,
+      "questionStartTime": "2025-05-27T11:07:09.477Z",
+      "questionEndTime": "2025-05-27T11:07:23.728Z",
+      "questionDurationMs": 14251
+    }
+  ],
+  "experimentSummary": {
+    "experimentStartTime": "2025-05-27T11:07:09.438Z",
+    "experimentEndTime": "2025-05-27T11:07:23.729Z",
+    "totalExperimentDurationMs": 14291,
+    "totalExperimentDurationMin": "0.24",
+    "totalStimuliCompleted": 1,
+    "playStatistics": {
+      "totalPlays": 1,
+      "averagePlaysPerStimulus": "1.00",
+      "maxPlaysForAnyStimulus": 1,
+      "minPlaysForAnyStimulus": 1
+    },
+    "averageQuestionTimeMs": "14251",
+    "averageQuestionTimeSec": "14.25"
+  }
+}

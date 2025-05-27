@@ -1,0 +1,88 @@
+{
+  "participantId": "test7",
+  "demographicInfo": {
+    "age": "25-29",
+    "gender": "others",
+    "musicalBackground": "none",
+    "theory": "intermediate",
+    "listenFrequency": "everyday",
+    "liveFrequency": "weekly",
+    "listeningEnvironment": "laptop-headphones-indoor",
+    "participantId": "test7",
+    "experimentStartTime": "2025-05-27T10:14:25.727Z"
+  },
+  "stimuli": [
+    {
+      "stimulusIndex": 1,
+      "genre": "jazz",
+      "song_id": "jazz_s4",
+      "segment_type": "start",
+      "likeRating": 4,
+      "complexRating": 4,
+      "familiarRating": 4,
+      "structureRating": "4",
+      "emotionRating": "2",
+      "engagementRating": 4,
+      "selectedComponent": "harmony",
+      "genreSelection": "folk",
+      "curiosityRating": 4,
+      "totalPlayCount": 1,
+      "questionStartTime": "2025-05-27T10:14:25.783Z",
+      "questionEndTime": "2025-05-27T10:15:07.519Z",
+      "questionDurationMs": 41736
+    },
+    {
+      "stimulusIndex": 2,
+      "genre": "classical",
+      "song_id": "classical_s1",
+      "segment_type": "mid",
+      "likeRating": 4,
+      "complexRating": 4,
+      "familiarRating": 4,
+      "structureRating": "4",
+      "emotionRating": "4",
+      "engagementRating": 4,
+      "selectedComponent": "rhythm",
+      "genreSelection": "jazz_pop",
+      "curiosityRating": 4,
+      "totalPlayCount": 1,
+      "questionStartTime": "2025-05-27T10:15:07.520Z",
+      "questionEndTime": "2025-05-27T10:16:29.457Z",
+      "questionDurationMs": 81937
+    },
+    {
+      "stimulusIndex": 3,
+      "genre": "math_rock",
+      "song_id": "math_rock_s1",
+      "segment_type": "start",
+      "likeRating": 4,
+      "complexRating": 4,
+      "familiarRating": 4,
+      "structureRating": "1",
+      "emotionRating": "3",
+      "engagementRating": 4,
+      "selectedComponent": "melody",
+      "genreSelection": "jazz_pop",
+      "curiosityRating": 4,
+      "totalPlayCount": 1,
+      "questionStartTime": "2025-05-27T10:16:29.457Z",
+      "questionEndTime": "2025-05-27T10:17:08.625Z",
+      "questionDurationMs": 39168
+    }
+  ],
+  "experimentSummary": {
+    "experimentStartTime": "2025-05-27T10:14:25.727Z",
+    "experimentEndTime": "2025-05-27T10:17:08.628Z",
+    "totalExperimentDurationMs": 162901,
+    "totalExperimentDurationMin": "2.72",
+    "totalStimuliCompleted": 3,
+    "playStatistics": {
+      "totalPlays": 3,
+      "averagePlaysPerStimulus": "1.00",
+      "maxPlaysForAnyStimulus": 1,
+      "minPlaysForAnyStimulus": 1
+    },
+    "averageQuestionTimeMs": "54280",
+    "averageQuestionTimeSec": "54.28"
+  }
+}
