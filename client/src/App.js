@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
 // ===== Constants =====
 const TOTAL_STIMULI_EXPECTED = 12;
-const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSctUuvb1W0yWW8pUoFJ917v-eTWk_RCyWYx7w1TPhXUgq9JMA/formResponse';
 const LOCAL_SERVER_URL = 'http://localhost:3001/api/submit-results';
 const FORMSPREE_URL = 'https://formspree.io/f/xyzwvbgg';
 
@@ -790,8 +789,17 @@ const MusicExperimentApp = () => {
       return newCounts;
     });
     
-    // 播放音頻
-    playAudio(filePath);
+    // 檢查是否有預載入的音頻
+    const preloadedAudio = preloadedAudioRef.current[filePath];
+    if (preloadedAudio && preloadedAudio.readyState >= 3) {
+      console.log('Using preloaded audio for:', filePath);
+      // 使用預載入的音頻源
+      playAudio(preloadedAudio.src);
+    } else {
+      console.log('No preloaded audio, loading:', filePath);
+      // 直接播放
+      playAudio(filePath);
+    }
   };
   
   const submitData = async (data) => {
@@ -961,7 +969,7 @@ const MusicExperimentApp = () => {
   // Render screens
   const renderIntroScreen = () => (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Term Project for NTHU 2025 Spring MIR (by Su Li // v22)</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Term Project for NTHU 2025 Spring MIR (by Su Li)</h1>
       <hr className="my-6" />
       <div className="bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-semibold mb-4 text-center">歡迎參與本次音樂感知實驗！</h2>
