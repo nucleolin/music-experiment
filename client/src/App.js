@@ -151,10 +151,10 @@ const MUSIC_SELECTION_CONFIG = {
   // 每個曲風的配置
   genreDistribution: {
     "classical": 2,
-    "math_rock": 3,
-    "jazz": 3,
-    "pop_dance": 1,
-    "scandipop": 1,
+    "math_rock": 2,
+    "jazz": 2,
+    "pop_dance": 2,
+    "scandipop": 2,
     "jazz_pop": 2
   },
   
